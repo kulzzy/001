@@ -2496,15 +2496,3 @@ showLoading(
 
 </body>
 </html>
-
-OneSignal worker file
-
-Save this separately in the root of your "001" repository, exactly as:
-
-"OneSignalSDKWorker.js"
-
-:::writing{variant="document" id="74106" title="OneSignalSDKWorker.js"}
-
-importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
-
-The important fix is the chat layout: the message area now expands/shrinks independently, while the composer stays at the bottom, so the 📎 upload button, typing box, and SEND button remain accessible instead of being pushed out of the screen.
