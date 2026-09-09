@@ -1,0 +1,1353 @@
+<script>
+/* =========================================================
+   KULZZY CHAT — FIREBASE START
+========================================================= */
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDsCEPNnY6LeQot30HuXFo2F36v6eD7n3k",
+    authDomain: "kulzzy-chat.firebaseapp.com",
+    databaseURL: "https://kulzzy-chat-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "kulzzy-chat",
+    storageBucket: "kulzzy-chat.firebasestorage.app",
+    messagingSenderId: "780479389980",
+    appId: "1:780479389980:web:39c5c35bca1a673a5cdad9",
+    measurementId: "G-CZMLV3SRPS"
+};
+
+let currentUser = null;
+let currentProfile = null;
+let currentChatCode = null;
+let selectedFile = null;
+let replyingTo = null;
+let messagesListenerStarted = false;
+
+const CLOUDINARY_UPLOAD_URL =
+    "https://api.cloudinary.com/v1_1/s4j0x7dk/auto/upload";
+
+const CLOUDINARY_UPLOAD_PRESET =
+    "kulzzy_chat";
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const loading = document.getElementById("loading");
+const loadingText = document.getElementById("loadingText");
+
+const profileScreen = document.getElementById("profileScreen");
+const codeScreen = document.getElementById("codeScreen");
+const chatScreen = document.getElementById("chatScreen");
+
+const nameInput = document.getElementById("nameInput");
+const createChatBtn = document.getElementById("createChatBtn");
+const openChatBtn = document.getElementById("openChatBtn");
+
+const chatCodeDisplay =
+    document.getElementById("chatCodeDisplay");
+
+const messages =
+    document.getElementById("messages");
+
+const emptyChat =
+    document.getElementById("emptyChat");
+
+const messageInput =
+    document.getElementById("messageInput");
+
+const sendBtn =
+    document.getElementById("sendBtn");
+
+const attachBtn =
+    document.getElementById("attachBtn");
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const filePreview =
+    document.getElementById("filePreview");
+
+const replyBox =
+    document.getElementById("replyBox");
+
+const replyText =
+    document.getElementById("replyText");
+
+const closeReplyBtn =
+    document.getElementById("closeReplyBtn");
+
+const chatName =
+    document.getElementById("chatName");
+
+const chatCode =
+    document.getElementById("chatCode");
+
+const notificationBtn =
+    document.getElementById("notificationBtn");
+
+const profileError =
+    document.getElementById("profileError");
+
+
+/* =========================================================
+   SCREEN
+========================================================= */
+
+function showScreen(screen) {
+
+    profileScreen.classList.add("hidden");
+    codeScreen.classList.add("hidden");
+    chatScreen.classList.add("hidden");
+
+    screen.classList.remove("hidden");
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+function showLoading(text) {
+
+    loading.classList.remove("hidden");
+
+    loadingText.textContent =
+        text || "Loading...";
+}
+
+
+function hideLoading() {
+
+    loading.classList.add("hidden");
+}
+
+
+/* =========================================================
+   FIREBASE INITIALIZATION
+========================================================= */
+
+try {
+
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+
+} catch (error) {
+
+    console.error(
+        "Firebase initialization error:",
+        error
+    );
+
+    hideLoading();
+
+    profileError.textContent =
+        "Firebase could not start: " +
+        error.message;
+
+    showScreen(profileScreen);
+}
+
+
+/* =========================================================
+   FIREBASE SERVICES
+========================================================= */
+
+const auth = firebase.auth();
+const database = firebase.database();
+
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+auth.onAuthStateChanged(async function(user) {
+
+    currentUser = user;
+
+    if (user) {
+
+        console.log(
+            "KULZZY AUTH SUCCESS:",
+            user.uid
+        );
+
+        try {
+
+            await loadUserProfile();
+
+        } catch (error) {
+
+            console.error(
+                "PROFILE LOAD ERROR:",
+                error
+            );
+
+            hideLoading();
+
+            profileError.textContent =
+                "Unable to load your chat: " +
+                error.message;
+
+            showScreen(profileScreen);
+        }
+
+        return;
+    }
+
+
+    /* =====================================================
+       NO USER — CREATE ANONYMOUS USER
+    ===================================================== */
+
+    showLoading(
+        "Creating your Kulzzy Chat..."
+    );
+
+    try {
+
+        await auth.signInAnonymously();
+
+    } catch (error) {
+
+        console.error(
+            "KULZZY FIREBASE AUTH ERROR:",
+            error
+        );
+
+        hideLoading();
+
+        let message =
+            "Firebase authentication failed.";
+
+        if (error && error.code) {
+
+            message +=
+                "\n\nError: " +
+                error.code;
+
+        }
+
+        if (error && error.message) {
+
+            message +=
+                "\n" +
+                error.message;
+
+        }
+
+        profileError.textContent =
+            message;
+
+        showScreen(profileScreen);
+    }
+
+});
+
+
+/* =========================================================
+   LOAD USER PROFILE
+========================================================= */
+
+async function loadUserProfile() {
+
+    showLoading(
+        "Loading your Kulzzy Chat..."
+    );
+
+    if (!currentUser) {
+
+        throw new Error(
+            "No authenticated user."
+        );
+    }
+
+    const snapshot =
+        await database
+        .ref(
+            "users/" +
+            currentUser.uid
+        )
+        .once("value");
+
+
+    if (snapshot.exists()) {
+
+        currentProfile =
+            snapshot.val();
+
+        currentChatCode =
+            currentProfile.chatCode;
+
+
+        chatName.textContent =
+            currentProfile.name ||
+            "Kulzzy Chat";
+
+        chatCode.textContent =
+            currentChatCode ||
+            "";
+
+
+        setupOneSignalForUser(
+            currentUser.uid
+        );
+
+        await setupNotificationButton();
+
+
+        hideLoading();
+
+        showScreen(
+            chatScreen
+        );
+
+        startChat();
+
+    } else {
+
+        hideLoading();
+
+        showScreen(
+            profileScreen
+        );
+    }
+}
+
+
+/* =========================================================
+   CREATE CHAT
+========================================================= */
+
+createChatBtn.addEventListener(
+    "click",
+    async function() {
+
+        profileError.textContent = "";
+
+        const name =
+            nameInput.value.trim();
+
+
+        if (!name) {
+
+            profileError.textContent =
+                "Please enter your name.";
+
+            return;
+        }
+
+
+        if (!currentUser) {
+
+            profileError.textContent =
+                "Firebase is still starting. Please wait.";
+
+            return;
+        }
+
+
+        createChatBtn.disabled = true;
+
+        createChatBtn.textContent =
+            "CREATING...";
+
+
+        try {
+
+            const chatCode =
+                await createUniqueChatCode();
+
+
+            const profile = {
+
+                name: name,
+
+                chatCode:
+                    chatCode,
+
+                createdAt:
+                    Date.now()
+            };
+
+
+            await database
+                .ref(
+                    "users/" +
+                    currentUser.uid
+                )
+                .set(profile);
+
+
+            await database
+                .ref(
+                    "chatCodes/" +
+                    chatCode
+                )
+                .set({
+
+                    uid:
+                        currentUser.uid,
+
+                    name:
+                        name,
+
+                    createdAt:
+                        Date.now()
+                });
+
+
+            currentProfile =
+                profile;
+
+            currentChatCode =
+                chatCode;
+
+
+            chatCodeDisplay.textContent =
+                chatCode;
+
+
+            setupOneSignalForUser(
+                currentUser.uid
+            );
+
+
+            hideLoading();
+
+            showScreen(
+                codeScreen
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "CREATE CHAT ERROR:",
+                error
+            );
+
+            profileError.textContent =
+                error.message ||
+                "Unable to create your chat.";
+
+        } finally {
+
+            createChatBtn.disabled =
+                false;
+
+            createChatBtn.textContent =
+                "💬 CREATE MY CHAT";
+        }
+    }
+);
+
+
+/* =========================================================
+   OPEN CHAT
+========================================================= */
+
+openChatBtn.addEventListener(
+    "click",
+    async function() {
+
+        if (!currentProfile) {
+            return;
+        }
+
+        chatName.textContent =
+            currentProfile.name ||
+            "Kulzzy Chat";
+
+        chatCode.textContent =
+            currentProfile.chatCode ||
+            "";
+
+        setupOneSignalForUser(
+            currentUser.uid
+        );
+
+        await setupNotificationButton();
+
+        showScreen(
+            chatScreen
+        );
+
+        startChat();
+    }
+);
+
+
+/* =========================================================
+   UNIQUE CHAT CODE
+========================================================= */
+
+async function createUniqueChatCode() {
+
+    for (let i = 0; i < 20; i++) {
+
+        const number =
+            Math.floor(
+                100000 +
+                Math.random() * 900000
+            );
+
+
+        const code =
+            "KULZZY" +
+            number;
+
+
+        const snapshot =
+            await database
+            .ref(
+                "chatCodes/" +
+                code
+            )
+            .once("value");
+
+
+        if (!snapshot.exists()) {
+
+            return code;
+        }
+    }
+
+
+    throw new Error(
+        "Unable to generate a unique chat code."
+    );
+}
+
+
+/* =========================================================
+   START CHAT
+========================================================= */
+
+function startChat() {
+
+    if (messagesListenerStarted) {
+        return;
+    }
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    messagesListenerStarted = true;
+
+
+    const ref =
+        database
+        .ref(
+            "conversations/" +
+            currentUser.uid +
+            "/messages"
+        )
+        .limitToLast(100);
+
+
+    ref.on(
+        "child_added",
+        function(snapshot) {
+
+            const message =
+                snapshot.val();
+
+            if (message) {
+
+                renderMessage(
+                    snapshot.key,
+                    message
+                );
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   RENDER MESSAGE
+========================================================= */
+
+function renderMessage(id, message) {
+
+    if (
+        document.getElementById(
+            "message-" + id
+        )
+    ) {
+        return;
+    }
+
+
+    if (emptyChat) {
+        emptyChat.remove();
+    }
+
+
+    const wrapper =
+        document.createElement("div");
+
+
+    wrapper.className =
+        "message " +
+        (
+            message.senderUid ===
+            currentUser.uid
+                ? "user"
+                : "admin"
+        );
+
+
+    wrapper.id =
+        "message-" + id;
+
+
+    const bubble =
+        document.createElement("div");
+
+
+    bubble.className =
+        "message-bubble";
+
+
+    let html = "";
+
+
+    html +=
+        '<div class="message-name">' +
+        escapeHtml(
+            message.senderName ||
+            "Kulzzy Radio"
+        ) +
+        "</div>";
+
+
+    if (message.replyTo) {
+
+        html +=
+            '<div style="' +
+            'border-left:3px solid #ffd700;' +
+            'padding-left:8px;' +
+            'margin-bottom:7px;' +
+            'color:#aebccc;' +
+            'font-size:11px;' +
+            '">' +
+
+            escapeHtml(
+                message.replyTo.text ||
+                (
+                    message.replyTo.mediaType === "image"
+                        ? "📷 Picture"
+                        : message.replyTo.mediaType === "video"
+                            ? "🎥 Video"
+                            : "Message"
+                )
+            ) +
+
+            "</div>";
+    }
+
+
+    if (message.text) {
+
+        html +=
+            '<div class="message-text">' +
+            escapeHtml(
+                message.text
+            ) +
+            "</div>";
+    }
+
+
+    if (
+        message.mediaUrl &&
+        message.mediaType === "image"
+    ) {
+
+        html +=
+            '<img class="message-media" ' +
+            'src="' +
+            escapeHtml(
+                message.mediaUrl
+            ) +
+            '" alt="Picture">';
+    }
+
+
+    if (
+        message.mediaUrl &&
+        message.mediaType === "video"
+    ) {
+
+        html +=
+            '<video class="message-video" ' +
+            'controls playsinline>' +
+
+            '<source src="' +
+            escapeHtml(
+                message.mediaUrl
+            ) +
+            '">' +
+
+            "</video>";
+    }
+
+
+    html +=
+        '<div class="message-time">' +
+        formatTime(
+            message.createdAt
+        ) +
+        "</div>";
+
+
+    bubble.innerHTML =
+        html;
+
+
+    wrapper.appendChild(
+        bubble
+    );
+
+
+    if (
+        message.senderUid !==
+        currentUser.uid
+    ) {
+
+        wrapper.addEventListener(
+            "click",
+            function() {
+
+                setReply(
+                    message
+                );
+            }
+        );
+    }
+
+
+    messages.appendChild(
+        wrapper
+    );
+
+
+    requestAnimationFrame(
+        function() {
+
+            messages.scrollTop =
+                messages.scrollHeight;
+        }
+    );
+}
+
+
+/* =========================================================
+   REPLY
+========================================================= */
+
+function setReply(message) {
+
+    replyingTo = message;
+
+    replyBox.classList.add("show");
+
+    let text =
+        message.text ||
+        (
+            message.mediaType === "image"
+                ? "📷 Picture"
+                : message.mediaType === "video"
+                    ? "🎥 Video"
+                    : "Message"
+        );
+
+    replyText.textContent =
+        text;
+
+    messageInput.focus();
+}
+
+
+closeReplyBtn.addEventListener(
+    "click",
+    clearReply
+);
+
+
+function clearReply() {
+
+    replyingTo = null;
+
+    replyBox.classList.remove(
+        "show"
+    );
+
+    replyText.textContent = "";
+}
+
+
+/* =========================================================
+   ATTACHMENT
+========================================================= */
+
+attachBtn.addEventListener(
+    "click",
+    function() {
+
+        fileInput.click();
+    }
+);
+
+
+fileInput.addEventListener(
+    "change",
+    function() {
+
+        selectedFile =
+            fileInput.files[0] ||
+            null;
+
+
+        if (!selectedFile) {
+
+            filePreview.classList.remove(
+                "show"
+            );
+
+            filePreview.textContent =
+                "";
+
+            return;
+        }
+
+
+        if (
+            selectedFile.size >
+            25 * 1024 * 1024
+        ) {
+
+            alert(
+                "File is too large. Maximum size is 25MB."
+            );
+
+            fileInput.value = "";
+
+            selectedFile = null;
+
+            return;
+        }
+
+
+        filePreview.textContent =
+            "📎 " +
+            selectedFile.name +
+            " (" +
+            formatFileSize(
+                selectedFile.size
+            ) +
+            ")";
+
+
+        filePreview.classList.add(
+            "show"
+        );
+    }
+);
+
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+sendBtn.addEventListener(
+    "click",
+    sendMessage
+);
+
+
+messageInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (
+            event.key === "Enter" &&
+            !event.shiftKey
+        ) {
+
+            event.preventDefault();
+
+            sendMessage();
+        }
+    }
+);
+
+
+async function sendMessage() {
+
+    if (!currentUser) {
+        return;
+    }
+
+
+    const text =
+        messageInput.value.trim();
+
+
+    if (
+        !text &&
+        !selectedFile
+    ) {
+        return;
+    }
+
+
+    sendBtn.disabled = true;
+
+    sendBtn.textContent = "...";
+
+
+    try {
+
+        let mediaUrl = "";
+        let mediaType = "";
+
+
+        if (selectedFile) {
+
+            const result =
+                await uploadToCloudinary(
+                    selectedFile
+                );
+
+            mediaUrl =
+                result.secure_url;
+
+            mediaType =
+                selectedFile.type.startsWith(
+                    "video/"
+                )
+                    ? "video"
+                    : "image";
+        }
+
+
+        const message = {
+
+            senderUid:
+                currentUser.uid,
+
+            senderName:
+                currentProfile?.name ||
+                "User",
+
+            text:
+                text || "",
+
+            mediaUrl:
+                mediaUrl,
+
+            mediaType:
+                mediaType,
+
+            createdAt:
+                Date.now()
+        };
+
+
+        if (replyingTo) {
+
+            message.replyTo = {
+
+                senderName:
+                    replyingTo.senderName ||
+                    "Kulzzy Radio",
+
+                text:
+                    replyingTo.text ||
+                    "",
+
+                mediaType:
+                    replyingTo.mediaType ||
+                    ""
+            };
+        }
+
+
+        await database
+            .ref(
+                "conversations/" +
+                currentUser.uid +
+                "/messages"
+            )
+            .push(message);
+
+
+        messageInput.value = "";
+
+        fileInput.value = "";
+
+        selectedFile = null;
+
+        filePreview.classList.remove(
+            "show"
+        );
+
+        filePreview.textContent = "";
+
+        clearReply();
+
+
+    } catch (error) {
+
+        console.error(
+            "SEND ERROR:",
+            error
+        );
+
+        alert(
+            "Unable to send message.\n\n" +
+            error.message
+        );
+
+    } finally {
+
+        sendBtn.disabled = false;
+
+        sendBtn.textContent = "SEND";
+    }
+}
+
+
+/* =========================================================
+   CLOUDINARY
+========================================================= */
+
+async function uploadToCloudinary(file) {
+
+    const formData =
+        new FormData();
+
+
+    formData.append(
+        "file",
+        file
+    );
+
+    formData.append(
+        "upload_preset",
+        CLOUDINARY_UPLOAD_PRESET
+    );
+
+
+    const response =
+        await fetch(
+            CLOUDINARY_UPLOAD_URL,
+            {
+                method: "POST",
+                body: formData
+            }
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Cloudinary upload failed."
+        );
+    }
+
+
+    const data =
+        await response.json();
+
+
+    if (!data.secure_url) {
+
+        throw new Error(
+            "Cloudinary did not return a file URL."
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================================================
+   ONESIGNAL
+========================================================= */
+
+function setupOneSignalForUser(uid) {
+
+    if (!uid) {
+        return;
+    }
+
+
+    window.OneSignalDeferred =
+        window.OneSignalDeferred || [];
+
+
+    OneSignalDeferred.push(
+        async function(OneSignal) {
+
+            try {
+
+                await OneSignal.login(uid);
+
+            } catch (error) {
+
+                console.error(
+                    "OneSignal login error:",
+                    error
+                );
+            }
+        }
+    );
+}
+
+
+/* =========================================================
+   NOTIFICATION
+========================================================= */
+
+async function setupNotificationButton() {
+
+    if (!notificationBtn) {
+        return;
+    }
+
+
+    notificationBtn.classList.add(
+        "hidden"
+    );
+
+
+    window.OneSignalDeferred =
+        window.OneSignalDeferred || [];
+
+
+    OneSignalDeferred.push(
+        async function(OneSignal) {
+
+            try {
+
+                if (currentUser) {
+
+                    await OneSignal.login(
+                        currentUser.uid
+                    );
+                }
+
+
+                updateNotificationButton(
+                    OneSignal
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "OneSignal setup error:",
+                    error
+                );
+            }
+        }
+    );
+}
+
+
+function updateNotificationButton(
+    OneSignal
+) {
+
+    try {
+
+        const permission =
+            OneSignal.Notifications &&
+            OneSignal.Notifications.permission;
+
+
+        const subscription =
+            OneSignal.User &&
+            OneSignal.User.PushSubscription;
+
+
+        if (
+            permission === true ||
+            (
+                subscription &&
+                subscription.optedIn === true
+            )
+        ) {
+
+            notificationBtn.classList.add(
+                "hidden"
+            );
+
+        } else {
+
+            notificationBtn.classList.remove(
+                "hidden"
+            );
+        }
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+
+/* =========================================================
+   NOTIFICATION CLICK
+========================================================= */
+
+notificationBtn.addEventListener(
+    "click",
+    async function() {
+
+        notificationBtn.disabled = true;
+
+        notificationBtn.textContent =
+            "🔔 TURNING ON...";
+
+
+        window.OneSignalDeferred =
+            window.OneSignalDeferred || [];
+
+
+        OneSignalDeferred.push(
+            async function(OneSignal) {
+
+                try {
+
+                    if (currentUser) {
+
+                        await OneSignal.login(
+                            currentUser.uid
+                        );
+                    }
+
+
+                    if (
+                        OneSignal.Notifications
+                    ) {
+
+                        await OneSignal
+                            .Notifications
+                            .requestPermission();
+                    }
+
+
+                    updateNotificationButton(
+                        OneSignal
+                    );
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    notificationBtn.disabled =
+                        false;
+
+                    notificationBtn.textContent =
+                        "🔔 TURN ON NOTIFICATIONS";
+                }
+            }
+        );
+    }
+);
+
+
+/* =========================================================
+   TIME
+========================================================= */
+
+function formatTime(timestamp) {
+
+    if (!timestamp) {
+        return "";
+    }
+
+
+    const date =
+        new Date(timestamp);
+
+
+    return date.toLocaleDateString(
+        "en-NG",
+        {
+            day: "2-digit",
+            month: "short"
+        }
+    ) +
+    " " +
+    date.toLocaleTimeString(
+        "en-NG",
+        {
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
+}
+
+
+/* =========================================================
+   FILE SIZE
+========================================================= */
+
+function formatFileSize(bytes) {
+
+    if (bytes < 1024) {
+
+        return bytes + " B";
+    }
+
+
+    if (bytes < 1024 * 1024) {
+
+        return (
+            bytes / 1024
+        ).toFixed(1) +
+        " KB";
+    }
+
+
+    return (
+        bytes /
+        (1024 * 1024)
+    ).toFixed(1) +
+    " MB";
+}
+
+
+/* =========================================================
+   ESCAPE HTML
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(
+        value || ""
+    )
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   START
+========================================================= */
+
+showLoading(
+    "Starting Kulzzy Chat..."
+);
+
+</script>
