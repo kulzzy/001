@@ -1,0 +1,2297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0,
+               maximum-scale=1.0, user-scalable=no">
+
+<title>Kulzzy Chat</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+        defer></script>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    width:100%;
+    min-height:100%;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#061426;
+    color:#fff;
+}
+
+body{
+    overflow-x:hidden;
+}
+
+button,
+input{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+/* =========================
+   MAIN APP
+========================= */
+
+#app{
+    width:100%;
+    min-height:100vh;
+}
+
+/* =========================
+   PROFILE SCREEN
+========================= */
+
+#profileScreen{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:
+        radial-gradient(circle at top,#12345a 0%,#061426 55%,#020a14 100%);
+}
+
+.card{
+    width:100%;
+    max-width:430px;
+    background:rgba(10,28,48,.96);
+    border:1px solid rgba(255,215,0,.25);
+    border-radius:22px;
+    padding:30px 22px;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    text-align:center;
+}
+
+.logo{
+    width:75px;
+    height:75px;
+    border-radius:50%;
+    margin:0 auto 18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#ffd700,#fff1a3,#c99700);
+    color:#061426;
+    font-size:34px;
+    box-shadow:0 8px 30px rgba(255,215,0,.25);
+}
+
+.card h1{
+    margin:0 0 10px;
+    font-size:25px;
+    color:#ffd700;
+}
+
+.card p{
+    margin:0 0 24px;
+    color:#b9c7d8;
+    line-height:1.5;
+    font-size:14px;
+}
+
+.nameInput{
+    width:100%;
+    height:52px;
+    border:none;
+    outline:none;
+    border-radius:14px;
+    padding:0 16px;
+    background:#f5f7fa;
+    color:#111;
+    font-size:16px;
+}
+
+.startBtn{
+    width:100%;
+    height:52px;
+    margin-top:14px;
+    border:none;
+    border-radius:14px;
+    background:linear-gradient(135deg,#ffd700,#e8b900);
+    color:#061426;
+    font-size:16px;
+    font-weight:800;
+}
+
+.startBtn:disabled{
+    opacity:.6;
+    cursor:not-allowed;
+}
+
+.error{
+    min-height:20px;
+    margin-top:12px;
+    color:#ff7070;
+    font-size:13px;
+    line-height:1.4;
+}
+
+/* =========================
+   CHAT SCREEN
+========================= */
+
+#chatScreen{
+    display:none;
+    width:100%;
+    min-height:100vh;
+    position:relative;
+    background:#061426;
+}
+
+/* =========================
+   CHAT HEADER
+========================= */
+
+.chatHeader{
+    position:sticky;
+    top:0;
+    z-index:1000;
+    width:100%;
+    min-height:68px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 14px;
+    background:rgba(4,17,31,.98);
+    border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.backBtn{
+    width:42px;
+    height:42px;
+    flex:none;
+    border:0;
+    border-radius:12px;
+    background:#102b47;
+    color:#fff;
+    font-size:20px;
+}
+
+.chatAvatar{
+    width:42px;
+    height:42px;
+    flex:none;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#ffd700,#c99700);
+    color:#061426;
+    font-size:20px;
+}
+
+.headerInfo{
+    flex:1;
+    min-width:0;
+}
+
+.headerTitle{
+    font-size:16px;
+    font-weight:800;
+    color:#fff;
+}
+
+.headerStatus{
+    margin-top:3px;
+    color:#8fa5bb;
+    font-size:11px;
+}
+
+/* =========================
+   CHAT CODE
+========================= */
+
+.codeBox{
+    margin:12px 14px 0;
+    padding:12px 14px;
+    border-radius:14px;
+    background:#0d233b;
+    border:1px solid rgba(255,215,0,.18);
+}
+
+.codeLabel{
+    color:#8fa5bb;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:.8px;
+}
+
+.myCode{
+    margin-top:3px;
+    color:#ffd700;
+    font-size:18px;
+    font-weight:900;
+    letter-spacing:1px;
+}
+
+/* =========================
+   MESSAGES
+========================= */
+
+#messages{
+    width:100%;
+    max-width:900px;
+    margin:0 auto;
+    padding:14px 12px 150px;
+}
+
+.messageRow{
+    width:100%;
+    display:flex;
+    margin:8px 0;
+}
+
+.messageRow.user{
+    justify-content:flex-end;
+}
+
+.messageRow.admin{
+    justify-content:flex-start;
+}
+
+.messageBubble{
+    max-width:82%;
+    padding:11px 13px;
+    border-radius:17px;
+    position:relative;
+    word-break:break-word;
+    overflow-wrap:anywhere;
+    box-shadow:0 4px 15px rgba(0,0,0,.15);
+}
+
+.messageRow.user .messageBubble{
+    background:#155e83;
+    border-bottom-right-radius:5px;
+}
+
+.messageRow.admin .messageBubble{
+    background:#162d46;
+    border-bottom-left-radius:5px;
+}
+
+.sender{
+    font-size:10px;
+    font-weight:800;
+    color:#ffd700;
+    margin-bottom:5px;
+}
+
+.messageText{
+    white-space:pre-wrap;
+    font-size:14px;
+    line-height:1.45;
+}
+
+.messageTime{
+    margin-top:5px;
+    text-align:right;
+    font-size:9px;
+    color:#a8b8c8;
+}
+
+.messageImage{
+    display:block;
+    width:100%;
+    max-width:300px;
+    max-height:350px;
+    object-fit:cover;
+    border-radius:12px;
+    margin-top:5px;
+}
+
+.messageVideo{
+    display:block;
+    width:100%;
+    max-width:320px;
+    border-radius:12px;
+    margin-top:5px;
+}
+
+.emptyChat{
+    text-align:center;
+    color:#71869c;
+    padding:50px 20px;
+    font-size:13px;
+}
+
+.loadingMessages{
+    text-align:center;
+    color:#71869c;
+    padding:30px;
+    font-size:13px;
+}
+
+/* =========================
+   FIXED COMPOSER
+========================= */
+
+.composer{
+    position:fixed;
+    left:50%;
+    bottom:0;
+    transform:translateX(-50%);
+    z-index:2147483647;
+
+    width:100%;
+    max-width:900px;
+
+    padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+
+    background:rgba(3,15,28,.98);
+    border-top:1px solid rgba(255,215,0,.2);
+
+    box-shadow:0 -10px 35px rgba(0,0,0,.4);
+}
+
+.replyBox{
+    display:none;
+    width:100%;
+    margin-bottom:7px;
+    padding:7px 10px;
+    border-left:3px solid #ffd700;
+    border-radius:8px;
+    background:#10263e;
+}
+
+.replyBox.active{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.replyContent{
+    flex:1;
+    min-width:0;
+}
+
+.replyName{
+    color:#ffd700;
+    font-size:10px;
+    font-weight:800;
+}
+
+.replyText{
+    color:#b8c7d6;
+    font-size:11px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.cancelReply{
+    width:28px;
+    height:28px;
+    border:0;
+    border-radius:50%;
+    background:#243d57;
+    color:#fff;
+}
+
+.attachPreview{
+    display:none;
+    align-items:center;
+    gap:8px;
+    margin-bottom:7px;
+    padding:6px;
+    background:#10263e;
+    border-radius:10px;
+}
+
+.attachPreview.active{
+    display:flex;
+}
+
+.previewThumb{
+    width:48px;
+    height:48px;
+    object-fit:cover;
+    border-radius:8px;
+}
+
+.previewName{
+    flex:1;
+    min-width:0;
+    font-size:11px;
+    color:#b8c7d6;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.removeAttachment{
+    width:30px;
+    height:30px;
+    border:0;
+    border-radius:50%;
+    background:#253d55;
+    color:#fff;
+}
+
+.composerRow{
+    width:100%;
+    display:flex;
+    align-items:flex-end;
+    gap:7px;
+}
+
+.attachBtn{
+    width:44px;
+    height:44px;
+    flex:none;
+    border:0;
+    border-radius:13px;
+    background:#102d49;
+    color:#ffd700;
+    font-size:21px;
+}
+
+#messageInput{
+    flex:1;
+    min-width:0;
+    min-height:44px;
+    max-height:110px;
+    resize:none;
+    outline:none;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:13px;
+    padding:12px;
+    background:#f5f7fa;
+    color:#111;
+    font-size:14px;
+    line-height:1.3;
+}
+
+.sendBtn{
+    width:48px;
+    height:44px;
+    flex:none;
+    border:0;
+    border-radius:13px;
+    background:linear-gradient(135deg,#ffd700,#e7b900);
+    color:#061426;
+    font-size:20px;
+    font-weight:900;
+}
+
+.sendBtn:disabled{
+    opacity:.5;
+}
+
+/* =========================
+   FILE INPUT
+========================= */
+
+#fileInput{
+    display:none;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px){
+
+    .card{
+        padding:25px 18px;
+        border-radius:18px;
+    }
+
+    .card h1{
+        font-size:22px;
+    }
+
+    .messageBubble{
+        max-width:88%;
+    }
+
+    .chatHeader{
+        min-height:62px;
+        padding:8px 10px;
+    }
+
+    .codeBox{
+        margin:9px 10px 0;
+    }
+
+    #messages{
+        padding-left:8px;
+        padding-right:8px;
+        padding-bottom:155px;
+    }
+
+    .composer{
+        padding-left:7px;
+        padding-right:7px;
+    }
+
+    .attachBtn{
+        width:42px;
+    }
+
+    .sendBtn{
+        width:46px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <!-- =========================
+         PROFILE SCREEN
+    ========================== -->
+
+    <section id="profileScreen">
+
+        <div class="card">
+
+            <div class="logo">💬</div>
+
+            <h1>👤 WELCOME TO KULZZY CHAT</h1>
+
+            <p>
+                Enter your name to create your private
+                Kulzzy Chat.
+            </p>
+
+            <input
+                id="nameInput"
+                class="nameInput"
+                type="text"
+                maxlength="40"
+                autocomplete="name"
+                placeholder="Your name">
+
+            <button
+                id="startBtn"
+                class="startBtn">
+                💬 CREATE MY CHAT
+            </button>
+
+            <div
+                id="profileError"
+                class="error">
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         CHAT SCREEN
+    ========================== -->
+
+    <section id="chatScreen">
+
+        <header class="chatHeader">
+
+            <button
+                id="backBtn"
+                class="backBtn"
+                type="button">
+                ←
+            </button>
+
+            <div class="chatAvatar">
+                👑
+            </div>
+
+            <div class="headerInfo">
+
+                <div class="headerTitle">
+                    KULZZY CHAT
+                </div>
+
+                <div
+                    id="headerStatus"
+                    class="headerStatus">
+                    Private conversation
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <div class="codeBox">
+
+            <div class="codeLabel">
+                YOUR KULZZY CHAT CODE
+            </div>
+
+            <div
+                id="myCode"
+                class="myCode">
+                KULZZY------
+            </div>
+
+        </div>
+
+
+        <div id="messages">
+
+            <div
+                id="loadingMessages"
+                class="loadingMessages">
+                Loading conversation...
+            </div>
+
+        </div>
+
+
+        <!-- =========================
+             FIXED MESSAGE COMPOSER
+        ========================== -->
+
+        <div class="composer">
+
+            <div
+                id="replyBox"
+                class="replyBox">
+
+                <div class="replyContent">
+
+                    <div
+                        id="replyName"
+                        class="replyName">
+                        Reply
+                    </div>
+
+                    <div
+                        id="replyText"
+                        class="replyText">
+                    </div>
+
+                </div>
+
+                <button
+                    id="cancelReply"
+                    class="cancelReply"
+                    type="button">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div
+                id="attachPreview"
+                class="attachPreview">
+
+                <img
+                    id="previewThumb"
+                    class="previewThumb"
+                    alt="">
+
+                <div
+                    id="previewName"
+                    class="previewName">
+                </div>
+
+                <button
+                    id="removeAttachment"
+                    class="removeAttachment"
+                    type="button">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="composerRow">
+
+                <button
+                    id="attachBtn"
+                    class="attachBtn"
+                    type="button">
+                    📎
+                </button>
+
+                <input
+                    id="fileInput"
+                    type="file"
+                    accept="image/*,video/*">
+
+                <textarea
+                    id="messageInput"
+                    rows="1"
+                    maxlength="2000"
+                    placeholder="Type your message..."></textarea>
+
+                <button
+                    id="sendBtn"
+                    class="sendBtn"
+                    type="button">
+                    ➤
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<script>
+/* =========================================================
+   KULZZY CHAT
+   FIREBASE CONFIG
+========================================================= */
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyDsCEPNnY6LeQot30HuXFo2F36v6eD7n3k",
+
+    authDomain:
+        "kulzzy-chat.firebaseapp.com",
+
+    databaseURL:
+        "https://kulzzy-chat-default-rtdb.europe-west1.firebasedatabase.app",
+
+    projectId:
+        "kulzzy-chat",
+
+    storageBucket:
+        "kulzzy-chat.firebasestorage.app",
+
+    messagingSenderId:
+        "780479389980",
+
+    appId:
+        "1:780479389980:web:39c5c35bca1a673a5cdad9",
+
+    measurementId:
+        "G-CZMLV3SRPS"
+};
+
+
+/* =========================================================
+   CLOUDINARY
+========================================================= */
+
+const CLOUDINARY_UPLOAD_URL =
+    "https://api.cloudinary.com/v1_1/s4j0x7dk/auto/upload";
+
+const CLOUDINARY_PRESET =
+    "kulzzy_chat";
+
+
+/* =========================================================
+   ONESIGNAL
+========================================================= */
+
+const ONESIGNAL_APP_ID =
+    "cd457ce6-826f-44f7-b653-c371feb790b6";
+
+
+/* =========================================================
+   NOTIFICATION SCRIPT
+========================================================= */
+
+const NOTIFICATION_URL =
+    "https://script.google.com/macros/s/AKfycbyBN2WnT0FZiClPl-by7lgGfAaBEVVhKIbMQqZ3reD6L3qdlE-jhryTMIkO69se_W0u/exec";
+
+
+/* =========================================================
+   FIREBASE START
+========================================================= */
+
+let app;
+let auth;
+let db;
+
+try{
+
+    app = firebase.initializeApp(firebaseConfig);
+
+    auth = firebase.auth();
+
+    db = firebase.database();
+
+}catch(error){
+
+    console.error("Firebase startup error:",error);
+
+    document.getElementById("profileError").textContent =
+        "Firebase could not start. Please refresh the page.";
+
+}
+
+
+/* =========================================================
+   DOM
+========================================================= */
+
+const profileScreen =
+    document.getElementById("profileScreen");
+
+const chatScreen =
+    document.getElementById("chatScreen");
+
+const nameInput =
+    document.getElementById("nameInput");
+
+const startBtn =
+    document.getElementById("startBtn");
+
+const profileError =
+    document.getElementById("profileError");
+
+const myCode =
+    document.getElementById("myCode");
+
+const messages =
+    document.getElementById("messages");
+
+const loadingMessages =
+    document.getElementById("loadingMessages");
+
+const messageInput =
+    document.getElementById("messageInput");
+
+const sendBtn =
+    document.getElementById("sendBtn");
+
+const attachBtn =
+    document.getElementById("attachBtn");
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const attachPreview =
+    document.getElementById("attachPreview");
+
+const previewThumb =
+    document.getElementById("previewThumb");
+
+const previewName =
+    document.getElementById("previewName");
+
+const removeAttachment =
+    document.getElementById("removeAttachment");
+
+const replyBox =
+    document.getElementById("replyBox");
+
+const replyName =
+    document.getElementById("replyName");
+
+const replyText =
+    document.getElementById("replyText");
+
+const cancelReply =
+    document.getElementById("cancelReply");
+
+const backBtn =
+    document.getElementById("backBtn");
+
+const headerStatus =
+    document.getElementById("headerStatus");
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+let currentUser = null;
+
+let currentProfile = null;
+
+let currentChatCode = null;
+
+let selectedFile = null;
+
+let replyTo = null;
+
+let messagesRef = null;
+
+
+/* =========================================================
+   GENERATE CHAT CODE
+========================================================= */
+
+function generateChatCode(){
+
+    const number =
+        Math.floor(100000 + Math.random() * 900000);
+
+    return "KULZZY" + number;
+}
+
+
+/* =========================================================
+   SAFE TEXT
+========================================================= */
+
+function safeText(value){
+
+    if(value === undefined ||
+       value === null){
+
+        return "";
+    }
+
+    return String(value);
+}
+
+
+/* =========================================================
+   AUTH ERROR
+========================================================= */
+
+function getAuthErrorMessage(error){
+
+    console.error(
+        "Firebase Authentication Error:",
+        error
+    );
+
+    const code =
+        error && error.code
+            ? error.code
+            : "";
+
+    if(code === "auth/operation-not-allowed"){
+
+        return "Firebase Anonymous Authentication is disabled. Enable Anonymous sign-in in Firebase Authentication.";
+    }
+
+    if(code === "auth/network-request-failed"){
+
+        return "Network error. Check your internet connection and try again.";
+    }
+
+    if(code === "auth/too-many-requests"){
+
+        return "Too many attempts. Please wait a moment and try again.";
+    }
+
+    if(code === "auth/api-key-not-valid"){
+
+        return "Firebase API key is not valid.";
+    }
+
+    if(code === "auth/app-not-authorized"){
+
+        return "This website is not authorized in Firebase.";
+    }
+
+    return "Unable to start Kulzzy Chat. " +
+           (error && error.message
+                ? error.message
+                : "Please try again.");
+}
+
+
+/* =========================================================
+   CREATE USER
+========================================================= */
+
+async function startChat(){
+
+    profileError.textContent = "";
+
+    const name =
+        nameInput.value.trim();
+
+    if(!name){
+
+        profileError.textContent =
+            "Please enter your name.";
+
+        nameInput.focus();
+
+        return;
+    }
+
+    if(name.length < 2){
+
+        profileError.textContent =
+            "Please enter your full name.";
+
+        nameInput.focus();
+
+        return;
+    }
+
+    if(!auth || !db){
+
+        profileError.textContent =
+            "Firebase is not ready. Please refresh the page.";
+
+        return;
+    }
+
+    startBtn.disabled = true;
+
+    startBtn.textContent =
+        "⏳ CREATING CHAT...";
+
+    try{
+
+        /*
+         * Use existing authenticated user
+         * when available.
+         */
+
+        let user = auth.currentUser;
+
+        /*
+         * Anonymous authentication
+         */
+
+        if(!user){
+
+            const result =
+                await auth.signInAnonymously();
+
+            user = result.user;
+        }
+
+        if(!user){
+
+            throw new Error(
+                "Firebase did not return a user."
+            );
+        }
+
+        currentUser = user;
+
+        /*
+         * Check whether this browser already
+         * has a saved profile.
+         */
+
+        const existingSnapshot =
+            await db
+                .ref("users/" + user.uid)
+                .once("value");
+
+        const existing =
+            existingSnapshot.val();
+
+
+        if(existing && existing.chatCode){
+
+            currentChatCode =
+                existing.chatCode;
+
+            currentProfile = {
+                name: existing.name || name,
+                chatCode: existing.chatCode
+            };
+
+        }else{
+
+            currentChatCode =
+                generateChatCode();
+
+            currentProfile = {
+
+                name:name,
+
+                chatCode:currentChatCode,
+
+                uid:user.uid,
+
+                createdAt:
+                    firebase.database.ServerValue.TIMESTAMP
+
+            };
+
+
+            await db
+                .ref("users/" + user.uid)
+                .set(currentProfile);
+
+        }
+
+
+        /*
+         * Save locally
+         */
+
+        localStorage.setItem(
+            "kulzzy_chat_profile",
+            JSON.stringify(currentProfile)
+        );
+
+
+        /*
+         * Open chat
+         */
+
+        openChat();
+
+
+    }catch(error){
+
+        profileError.textContent =
+            getAuthErrorMessage(error);
+
+    }finally{
+
+        startBtn.disabled = false;
+
+        startBtn.textContent =
+            "💬 CREATE MY CHAT";
+
+    }
+}
+
+
+/* =========================================================
+   OPEN CHAT
+========================================================= */
+
+function openChat(){
+
+    profileScreen.style.display =
+        "none";
+
+    chatScreen.style.display =
+        "block";
+
+    myCode.textContent =
+        currentProfile.chatCode;
+
+    headerStatus.textContent =
+        "Private conversation with Kulzzy Radio";
+
+    loadMessages();
+
+    initializeOneSignal();
+
+    updateComposerSpace();
+
+    setTimeout(function(){
+
+        messageInput.focus();
+
+    },300);
+}
+
+
+/* =========================================================
+   LOAD SAVED PROFILE
+========================================================= */
+
+async function loadSavedProfile(){
+
+    try{
+
+        const saved =
+            localStorage.getItem(
+                "kulzzy_chat_profile"
+            );
+
+        if(!saved){
+
+            return false;
+        }
+
+        const profile =
+            JSON.parse(saved);
+
+        if(!profile ||
+           !profile.chatCode ||
+           !profile.name){
+
+            return false;
+        }
+
+        if(!auth){
+
+            return false;
+        }
+
+        let user =
+            auth.currentUser;
+
+        if(!user){
+
+            try{
+
+                const result =
+                    await auth.signInAnonymously();
+
+                user = result.user;
+
+            }catch(error){
+
+                console.error(
+                    "Saved profile authentication failed:",
+                    error
+                );
+
+                return false;
+            }
+        }
+
+        currentUser = user;
+
+        currentProfile = {
+
+            name:profile.name,
+
+            chatCode:profile.chatCode,
+
+            uid:user.uid
+
+        };
+
+        currentChatCode =
+            profile.chatCode;
+
+        openChat();
+
+        return true;
+
+    }catch(error){
+
+        console.error(
+            "Saved profile error:",
+            error
+        );
+
+        return false;
+    }
+}
+
+
+/* =========================================================
+   LOAD MESSAGES
+========================================================= */
+
+function loadMessages(){
+
+    if(!currentChatCode){
+
+        return;
+    }
+
+    if(messagesRef){
+
+        messagesRef.off();
+    }
+
+    messagesRef =
+        db.ref(
+            "chats/" +
+            currentChatCode +
+            "/messages"
+        );
+
+    messagesRef
+        .orderByChild("createdAt")
+        .on(
+            "value",
+            snapshot => {
+
+                messages.innerHTML = "";
+
+                let hasMessages = false;
+
+                snapshot.forEach(
+                    child => {
+
+                        hasMessages = true;
+
+                        renderMessage(
+                            child.key,
+                            child.val()
+                        );
+                    }
+                );
+
+                if(!hasMessages){
+
+                    messages.innerHTML =
+                        '<div class="emptyChat">' +
+                        '💬 Your private conversation with Kulzzy Radio will appear here.' +
+                        '</div>';
+                }
+
+                scrollToBottom();
+            },
+            error => {
+
+                console.error(
+                    "Messages error:",
+                    error
+                );
+
+                messages.innerHTML =
+                    '<div class="emptyChat">' +
+                    'Unable to load messages. Please refresh.' +
+                    '</div>';
+            }
+        );
+}
+
+
+/* =========================================================
+   RENDER MESSAGE
+========================================================= */
+
+function renderMessage(id,data){
+
+    if(!data){
+
+        return;
+    }
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "messageRow " +
+        (data.sender === "admin"
+            ? "admin"
+            : "user");
+
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className =
+        "messageBubble";
+
+
+    const sender =
+        document.createElement("div");
+
+    sender.className =
+        "sender";
+
+    sender.textContent =
+        data.sender === "admin"
+            ? "👑 KULZZY RADIO"
+            : "👤 " + (
+                data.name ||
+                currentProfile.name
+            );
+
+    bubble.appendChild(sender);
+
+
+    /*
+     * Reply preview
+     */
+
+    if(data.replyTo){
+
+        const reply =
+            document.createElement("div");
+
+        reply.style.cssText =
+            "padding:6px 8px;" +
+            "margin-bottom:7px;" +
+            "border-left:2px solid #ffd700;" +
+            "background:rgba(0,0,0,.12);" +
+            "border-radius:6px;" +
+            "font-size:10px;" +
+            "color:#b9c7d8;";
+
+        reply.textContent =
+            "↩ " +
+            safeText(
+                data.replyTo.text
+            );
+
+        bubble.appendChild(reply);
+    }
+
+
+    /*
+     * Message text
+     */
+
+    if(data.text){
+
+        const text =
+            document.createElement("div");
+
+        text.className =
+            "messageText";
+
+        text.textContent =
+            data.text;
+
+        bubble.appendChild(text);
+    }
+
+
+    /*
+     * Image
+     */
+
+    if(
+        data.fileUrl &&
+        data.fileType &&
+        data.fileType.indexOf("image") === 0
+    ){
+
+        const image =
+            document.createElement("img");
+
+        image.className =
+            "messageImage";
+
+        image.src =
+            data.fileUrl;
+
+        image.alt =
+            "Attachment";
+
+        image.loading =
+            "lazy";
+
+        bubble.appendChild(image);
+    }
+
+
+    /*
+     * Video
+     */
+
+    if(
+        data.fileUrl &&
+        data.fileType &&
+        data.fileType.indexOf("video") === 0
+    ){
+
+        const video =
+            document.createElement("video");
+
+        video.className =
+            "messageVideo";
+
+        video.src =
+            data.fileUrl;
+
+        video.controls =
+            true;
+
+        video.preload =
+            "metadata";
+
+        bubble.appendChild(video);
+    }
+
+
+    /*
+     * Time
+     */
+
+    const time =
+        document.createElement("div");
+
+    time.className =
+        "messageTime";
+
+    time.textContent =
+        formatTime(data.createdAt);
+
+    bubble.appendChild(time);
+
+
+    /*
+     * Reply button
+     */
+
+    const replyButton =
+        document.createElement("button");
+
+    replyButton.type =
+        "button";
+
+    replyButton.textContent =
+        "↩";
+
+    replyButton.style.cssText =
+        "border:0;" +
+        "background:transparent;" +
+        "color:#ffd700;" +
+        "font-size:13px;" +
+        "padding:3px 0;" +
+        "margin-top:2px;";
+
+    replyButton.onclick =
+        function(){
+
+            setReply({
+                id:id,
+                name:
+                    data.name ||
+                    (
+                        data.sender === "admin"
+                            ? "Kulzzy Radio"
+                            : currentProfile.name
+                    ),
+                text:
+                    data.text ||
+                    "Attachment"
+            });
+        };
+
+    bubble.appendChild(replyButton);
+
+
+    row.appendChild(bubble);
+
+    messages.appendChild(row);
+}
+
+
+/* =========================================================
+   FORMAT TIME
+========================================================= */
+
+function formatTime(timestamp){
+
+    if(!timestamp){
+
+        return "";
+    }
+
+    const date =
+        new Date(timestamp);
+
+    if(isNaN(date.getTime())){
+
+        return "";
+    }
+
+    return date.toLocaleTimeString(
+        [],
+        {
+            hour:"2-digit",
+            minute:"2-digit"
+        }
+    );
+}
+
+
+/* =========================================================
+   SEND MESSAGE
+========================================================= */
+
+async function sendMessage(){
+
+    if(!currentUser){
+
+        alert(
+            "Chat is not ready. Please refresh the page."
+        );
+
+        return;
+    }
+
+    const text =
+        messageInput.value.trim();
+
+    if(!text && !selectedFile){
+
+        return;
+    }
+
+    sendBtn.disabled =
+        true;
+
+    sendBtn.textContent =
+        "⏳";
+
+
+    try{
+
+        let fileUrl = "";
+
+        let fileType = "";
+
+
+        /*
+         * Upload attachment
+         */
+
+        if(selectedFile){
+
+            const formData =
+                new FormData();
+
+            formData.append(
+                "file",
+                selectedFile
+            );
+
+            formData.append(
+                "upload_preset",
+                CLOUDINARY_PRESET
+            );
+
+            const response =
+                await fetch(
+                    CLOUDINARY_UPLOAD_URL,
+                    {
+                        method:"POST",
+                        body:formData
+                    }
+                );
+
+            if(!response.ok){
+
+                throw new Error(
+                    "Attachment upload failed."
+                );
+            }
+
+            const result =
+                await response.json();
+
+            fileUrl =
+                result.secure_url || "";
+
+            fileType =
+                selectedFile.type || "";
+        }
+
+
+        /*
+         * Message object
+         */
+
+        const message = {
+
+            sender:"user",
+
+            uid:currentUser.uid,
+
+            name:currentProfile.name,
+
+            text:text,
+
+            fileUrl:fileUrl,
+
+            fileType:fileType,
+
+            createdAt:
+                firebase.database.ServerValue.TIMESTAMP
+        };
+
+
+        /*
+         * Reply
+         */
+
+        if(replyTo){
+
+            message.replyTo = {
+
+                id:replyTo.id,
+
+                name:replyTo.name,
+
+                text:replyTo.text
+            };
+        }
+
+
+        /*
+         * Save message
+         */
+
+        const newMessageRef =
+            db.ref(
+                "chats/" +
+                currentChatCode +
+                "/messages"
+            ).push();
+
+        await newMessageRef.set(
+            message
+        );
+
+
+        /*
+         * Update chat information
+         */
+
+        await db.ref(
+            "chats/" +
+            currentChatCode +
+            "/info"
+        ).update({
+
+            userName:
+                currentProfile.name,
+
+            chatCode:
+                currentChatCode,
+
+            lastMessage:
+                text ||
+                "📎 Attachment",
+
+            lastMessageAt:
+                firebase.database.ServerValue.TIMESTAMP
+
+        });
+
+
+        /*
+         * Send notification
+         */
+
+        sendNotification(
+            message
+        );
+
+
+        /*
+         * Clear composer
+         */
+
+        messageInput.value = "";
+
+        messageInput.style.height =
+            "44px";
+
+        clearAttachment();
+
+        clearReply();
+
+        scrollToBottom();
+
+
+    }catch(error){
+
+        console.error(
+            "Send message error:",
+            error
+        );
+
+        alert(
+            "Unable to send message. Please try again."
+        );
+
+    }finally{
+
+        sendBtn.disabled =
+            false;
+
+        sendBtn.textContent =
+            "➤";
+
+        updateComposerSpace();
+    }
+}
+
+
+/* =========================================================
+   SEND NOTIFICATION
+========================================================= */
+
+function sendNotification(message){
+
+    try{
+
+        fetch(
+            NOTIFICATION_URL,
+            {
+                method:"POST",
+                mode:"no-cors",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+
+                    chatCode:
+                        currentChatCode,
+
+                    userName:
+                        currentProfile.name,
+
+                    message:
+                        message.text ||
+                        "📎 Attachment",
+
+                    sender:"user"
+
+                })
+            }
+        ).catch(
+            error => console.warn(
+                "Notification error:",
+                error
+            )
+        );
+
+    }catch(error){
+
+        console.warn(
+            "Notification error:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   ATTACHMENT
+========================================================= */
+
+attachBtn.addEventListener(
+    "click",
+    function(){
+
+        fileInput.click();
+
+    }
+);
+
+
+fileInput.addEventListener(
+    "change",
+    function(){
+
+        const file =
+            this.files &&
+            this.files[0];
+
+        if(!file){
+
+            return;
+        }
+
+        selectedFile =
+            file;
+
+        previewName.textContent =
+            file.name;
+
+
+        if(
+            file.type.indexOf("image") === 0
+        ){
+
+            const reader =
+                new FileReader();
+
+            reader.onload =
+                function(event){
+
+                    previewThumb.src =
+                        event.target.result;
+                };
+
+            reader.readAsDataURL(file);
+
+        }else{
+
+            previewThumb.src =
+                "";
+
+            previewThumb.alt =
+                "🎥";
+        }
+
+        attachPreview.classList.add(
+            "active"
+        );
+
+        updateComposerSpace();
+    }
+);
+
+
+/* =========================================================
+   CLEAR ATTACHMENT
+========================================================= */
+
+function clearAttachment(){
+
+    selectedFile =
+        null;
+
+    fileInput.value =
+        "";
+
+    previewThumb.src =
+        "";
+
+    previewName.textContent =
+        "";
+
+    attachPreview.classList.remove(
+        "active"
+    );
+
+    updateComposerSpace();
+}
+
+
+removeAttachment.addEventListener(
+    "click",
+    clearAttachment
+);
+
+
+/* =========================================================
+   REPLY
+========================================================= */
+
+function setReply(data){
+
+    replyTo =
+        data;
+
+    replyName.textContent =
+        "↩ Reply to " +
+        data.name;
+
+    replyText.textContent =
+        data.text;
+
+    replyBox.classList.add(
+        "active"
+    );
+
+    messageInput.focus();
+
+    updateComposerSpace();
+}
+
+
+function clearReply(){
+
+    replyTo =
+        null;
+
+    replyBox.classList.remove(
+        "active"
+    );
+
+    replyName.textContent =
+        "";
+
+    replyText.textContent =
+        "";
+
+    updateComposerSpace();
+}
+
+
+cancelReply.addEventListener(
+    "click",
+    clearReply
+);
+
+
+/* =========================================================
+   MESSAGE INPUT
+========================================================= */
+
+messageInput.addEventListener(
+    "input",
+    function(){
+
+        this.style.height =
+            "44px";
+
+        this.style.height =
+            Math.min(
+                this.scrollHeight,
+                110
+            ) + "px";
+
+        updateComposerSpace();
+    }
+);
+
+
+messageInput.addEventListener(
+    "keydown",
+    function(event){
+
+        if(
+            event.key === "Enter" &&
+            !event.shiftKey
+        ){
+
+            event.preventDefault();
+
+            sendMessage();
+        }
+    }
+);
+
+
+/* =========================================================
+   SEND BUTTON
+========================================================= */
+
+sendBtn.addEventListener(
+    "click",
+    sendMessage
+);
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+backBtn.addEventListener(
+    "click",
+    function(){
+
+        if(messagesRef){
+
+            messagesRef.off();
+        }
+
+        chatScreen.style.display =
+            "none";
+
+        profileScreen.style.display =
+            "flex";
+    }
+);
+
+
+/* =========================================================
+   SCROLL
+========================================================= */
+
+function scrollToBottom(){
+
+    setTimeout(
+        function(){
+
+            window.scrollTo(
+                0,
+                document.body.scrollHeight
+            );
+
+            messages.scrollTop =
+                messages.scrollHeight;
+
+        },
+        50
+    );
+}
+
+
+/* =========================================================
+   KEEP COMPOSER ABOVE EVERYTHING
+========================================================= */
+
+function updateComposerSpace(){
+
+    const composer =
+        document.querySelector(
+            ".composer"
+        );
+
+    if(!composer){
+
+        return;
+    }
+
+    const height =
+        composer.offsetHeight;
+
+    messages.style.paddingBottom =
+        (height + 25) + "px";
+}
+
+
+/* =========================================================
+   RESIZE OBSERVER
+========================================================= */
+
+if(
+    typeof ResizeObserver !==
+    "undefined"
+){
+
+    const composer =
+        document.querySelector(
+            ".composer"
+        );
+
+    if(composer){
+
+        const observer =
+            new ResizeObserver(
+                function(){
+
+                    updateComposerSpace();
+
+                }
+            );
+
+        observer.observe(
+            composer
+        );
+    }
+}
+
+
+window.addEventListener(
+    "resize",
+    updateComposerSpace
+);
+
+
+/* =========================================================
+   ONESIGNAL
+========================================================= */
+
+async function initializeOneSignal(){
+
+    try{
+
+        if(
+            typeof OneSignal ===
+            "undefined"
+        ){
+
+            return;
+        }
+
+        await OneSignal.init({
+
+            appId:
+                ONESIGNAL_APP_ID,
+
+            notifyButton:{
+                enable:false
+            },
+
+            allowLocalhostAsSecureOrigin:
+                true
+        });
+
+
+        /*
+         * Tag this user with chat code
+         */
+
+        if(
+            OneSignal.User &&
+            OneSignal.User.addTag
+        ){
+
+            await OneSignal.User.addTag(
+                "chatCode",
+                currentChatCode
+            );
+
+            await OneSignal.User.addTag(
+                "userName",
+                currentProfile.name
+            );
+        }
+
+    }catch(error){
+
+        console.warn(
+            "OneSignal initialization:",
+            error
+        );
+    }
+}
+
+
+/* =========================================================
+   START BUTTON
+========================================================= */
+
+startBtn.addEventListener(
+    "click",
+    startChat
+);
+
+
+/* =========================================================
+   ENTER NAME
+========================================================= */
+
+nameInput.addEventListener(
+    "keydown",
+    function(event){
+
+        if(
+            event.key === "Enter"
+        ){
+
+            event.preventDefault();
+
+            startChat();
+        }
+    }
+);
+
+
+/* =========================================================
+   STARTUP
+========================================================= */
+
+(async function(){
+
+    updateComposerSpace();
+
+    /*
+     * Try saved chat first.
+     */
+
+    const restored =
+        await loadSavedProfile();
+
+    if(restored){
+
+        return;
+    }
+
+    /*
+     * Keep welcome screen visible.
+     */
+
+    profileScreen.style.display =
+        "flex";
+
+    chatScreen.style.display =
+        "none";
+
+})();
+
+</script>
+
+</body>
+</html>
