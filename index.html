@@ -1,0 +1,2613 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1.0,
+maximum-scale=1.0,
+user-scalable=no">
+
+<title>Kulzzy Chat</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+defer></script>
+
+<style>
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,
+body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#020b1b;
+    color:#fff;
+}
+
+button,
+input{
+    font-family:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+#loading{
+    position:fixed;
+    inset:0;
+    background:#020b1b;
+    z-index:99999;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.loader{
+    width:45px;
+    height:45px;
+    border:4px solid rgba(255,215,0,.2);
+    border-top:4px solid #ffd700;
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg);}
+}
+
+#app{
+    width:100%;
+    height:100%;
+    position:relative;
+}
+
+.screen{
+    width:100%;
+    height:100%;
+    display:none;
+    flex-direction:column;
+}
+
+.screen.active{
+    display:flex;
+}
+
+.header{
+    min-height:64px;
+    background:#06152d;
+    border-bottom:1px solid rgba(255,215,0,.25);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:10px 15px;
+    position:relative;
+    z-index:10;
+    flex-shrink:0;
+}
+
+.header-title{
+    color:#ffd700;
+    font-size:21px;
+    font-weight:900;
+    letter-spacing:.5px;
+}
+
+.center-screen{
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+}
+
+.card{
+    width:100%;
+    max-width:450px;
+    background:#071a35;
+    border:1px solid rgba(255,215,0,.25);
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 15px 50px rgba(0,0,0,.4);
+}
+
+.card h2{
+    margin:0 0 10px;
+    text-align:center;
+    color:#ffd700;
+}
+
+.card p{
+    text-align:center;
+    color:#b9c5d8;
+    line-height:1.5;
+}
+
+.input{
+    width:100%;
+    height:50px;
+    border-radius:12px;
+    border:1px solid rgba(255,215,0,.3);
+    background:#020b1b;
+    color:#fff;
+    padding:0 15px;
+    outline:none;
+    margin-top:10px;
+}
+
+.input:focus{
+    border-color:#ffd700;
+}
+
+.primary-btn{
+    width:100%;
+    min-height:50px;
+    border:0;
+    border-radius:12px;
+    background:#ffd700;
+    color:#07101f;
+    font-weight:900;
+    margin-top:15px;
+    font-size:16px;
+}
+
+.primary-btn:active{
+    transform:scale(.98);
+}
+
+.small-text{
+    font-size:13px;
+    color:#9aa9bd;
+}
+
+#chatScreen{
+    position:relative;
+    overflow:hidden;
+    background:#020b1b;
+}
+
+#chatPage{
+    width:100%;
+    height:100%;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    touch-action:pan-y;
+    scroll-behavior:smooth;
+}
+
+#chatPage::-webkit-scrollbar{
+    width:5px;
+}
+
+#chatPage::-webkit-scrollbar-thumb{
+    background:rgba(255,215,0,.3);
+    border-radius:20px;
+}
+
+.chat-info{
+    min-height:48px;
+    padding:7px 12px;
+    background:#06152d;
+    border-bottom:1px solid rgba(255,215,0,.16);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-shrink:0;
+}
+
+.chat-user{
+    min-width:0;
+}
+
+.chat-name{
+    color:#ffd700;
+    font-size:14px;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.chat-code{
+    color:#8fa1ba;
+    font-size:11px;
+    margin-top:2px;
+}
+
+#notificationBtn{
+    border:1px solid rgba(255,215,0,.35);
+    background:#0a2344;
+    color:#ffd700;
+    border-radius:20px;
+    padding:8px 11px;
+    font-size:12px;
+    font-weight:bold;
+    white-space:nowrap;
+}
+
+#messages{
+    width:100%;
+    padding:15px 12px 15px;
+    overflow:visible;
+    touch-action:pan-y;
+}
+
+.message-row{
+    width:100%;
+    display:flex;
+    margin-bottom:10px;
+}
+
+.message-row.mine{
+    justify-content:flex-end;
+}
+
+.message-row.theirs{
+    justify-content:flex-start;
+}
+
+.message{
+    max-width:min(82%,430px);
+    padding:9px 11px;
+    border-radius:16px;
+    position:relative;
+    word-break:break-word;
+    box-shadow:0 3px 12px rgba(0,0,0,.2);
+}
+
+.message.mine{
+    background:#17406d;
+    border-bottom-right-radius:4px;
+}
+
+.message.theirs{
+    background:#101f35;
+    border:1px solid rgba(255,255,255,.06);
+    border-bottom-left-radius:4px;
+}
+
+.message-text{
+    color:#fff;
+    font-size:15px;
+    line-height:1.4;
+    white-space:pre-wrap;
+}
+
+.message-time{
+    color:#8fa1b6;
+    font-size:9px;
+    text-align:right;
+    margin-top:5px;
+}
+
+.message img,
+.message video{
+    display:block;
+    max-width:100%;
+    border-radius:11px;
+    margin-bottom:5px;
+}
+
+.message video{
+    max-height:300px;
+    background:#000;
+}
+
+.message audio{
+    width:100%;
+    min-width:220px;
+    max-width:300px;
+}
+
+.media-label{
+    color:#ffd700;
+    font-size:11px;
+    font-weight:bold;
+    margin-bottom:5px;
+}
+
+#replyBox{
+    display:none;
+    position:relative;
+    left:auto;
+    bottom:auto;
+    transform:none;
+    width:calc(100% - 30px);
+    max-width:650px;
+    margin:0 auto 8px;
+    background:#0b203d;
+    border-left:4px solid #ffd700;
+    border-radius:12px;
+    padding:9px 38px 9px 12px;
+    z-index:20;
+    box-shadow:0 8px 25px rgba(0,0,0,.45);
+}
+
+.reply-title{
+    color:#ffd700;
+    font-size:11px;
+    font-weight:bold;
+    margin-bottom:3px;
+}
+
+.reply-text{
+    color:#c5d0df;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+#cancelReply{
+    position:absolute;
+    right:8px;
+    top:7px;
+    width:27px;
+    height:27px;
+    border:0;
+    border-radius:50%;
+    background:#142e4e;
+    color:#fff;
+    font-size:16px;
+}
+
+#composer{
+    position:relative;
+    left:auto;
+    bottom:auto;
+    transform:none;
+    width:calc(100% - 20px);
+    max-width:650px;
+    margin:0 auto 12px;
+    z-index:30;
+    padding-bottom:env(safe-area-inset-bottom);
+    pointer-events:none;
+    touch-action:pan-y;
+}
+
+.composer-inner{
+    position:relative;
+    width:100%;
+    display:flex;
+    align-items:flex-end;
+    gap:7px;
+    padding:7px;
+    background:rgba(7,26,53,.97);
+    border:1px solid rgba(255,215,0,.32);
+    border-radius:30px;
+    box-shadow:
+        0 10px 35px rgba(0,0,0,.6),
+        0 0 0 1px rgba(0,0,0,.3);
+    pointer-events:auto;
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+}
+
+#attachBtn{
+    flex:0 0 43px;
+    width:43px;
+    height:43px;
+    border:1px solid rgba(255,215,0,.4);
+    border-radius:50%;
+    background:#102c4d;
+    color:#ffd700;
+    font-size:27px;
+    line-height:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    transition:.2s;
+}
+
+#attachBtn:active{
+    transform:scale(.9);
+    background:#17406d;
+}
+
+#messageInput{
+    flex:1;
+    min-width:0;
+    min-height:43px;
+    max-height:110px;
+    resize:none;
+    border:1px solid rgba(255,255,255,.08);
+    outline:none;
+    background:#020b1b;
+    color:#fff;
+    border-radius:23px;
+    padding:11px 14px;
+    font-size:15px;
+    overflow-y:auto;
+    touch-action:pan-y;
+}
+
+#messageInput::placeholder{
+    color:#75869d;
+}
+
+#messageInput:focus{
+    border-color:rgba(255,215,0,.4);
+}
+
+#sendBtn{
+    flex:0 0 47px;
+    width:47px;
+    height:47px;
+    border-radius:50%;
+    background:#ffd700;
+    color:#07101f;
+    border:2px solid #ff3030;
+    font-size:20px;
+    font-weight:900;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+    animation:sendRedBlink 1s infinite;
+    transition:transform .15s, opacity .15s;
+}
+
+#sendBtn:active{
+    transform:scale(.88);
+}
+
+#sendBtn:disabled{
+    opacity:.55;
+}
+
+@keyframes sendRedBlink{
+    0%,100%{
+        border-color:#ff3333;
+        box-shadow:
+            0 0 0 1px rgba(255,0,0,.3),
+            0 0 5px rgba(255,0,0,.25);
+    }
+    50%{
+        border-color:#ff0000;
+        box-shadow:
+            0 0 0 3px rgba(255,0,0,.9),
+            0 0 16px rgba(255,0,0,.85);
+    }
+}
+
+#attachMenu{
+    position:absolute;
+    left:5px;
+    bottom:62px;
+    width:205px;
+    padding:7px;
+    background:#071a35;
+    border:1px solid rgba(255,215,0,.3);
+    border-radius:17px;
+    box-shadow:0 12px 35px rgba(0,0,0,.6);
+    display:none;
+    z-index:2000;
+}
+
+#attachMenu.show{
+    display:block;
+    animation:menuIn .15s ease-out;
+}
+
+@keyframes menuIn{
+    from{
+        opacity:0;
+        transform:translateY(8px) scale(.96);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+}
+
+.attach-option{
+    width:100%;
+    min-height:45px;
+    border:0;
+    background:transparent;
+    color:#fff;
+    border-radius:11px;
+    text-align:left;
+    padding:9px 12px;
+    font-size:14px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    touch-action:manipulation;
+}
+
+.attach-option:hover,
+.attach-option:active{
+    background:#102c4d;
+    color:#ffd700;
+}
+
+.attach-icon{
+    width:29px;
+    height:29px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#102c4d;
+    font-size:16px;
+}
+
+#filePreview{
+    display:none;
+    position:relative;
+    left:auto;
+    bottom:auto;
+    transform:none;
+    width:calc(100% - 30px);
+    max-width:650px;
+    margin:0 auto 8px;
+    background:#0b203d;
+    border:1px solid rgba(255,215,0,.25);
+    border-radius:13px;
+    padding:8px 38px 8px 11px;
+    color:#dbe4f0;
+    font-size:12px;
+    z-index:25;
+    box-shadow:0 7px 22px rgba(0,0,0,.4);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+#clearFile{
+    position:absolute;
+    right:7px;
+    top:6px;
+    width:27px;
+    height:27px;
+    border:0;
+    border-radius:50%;
+    background:#142e4e;
+    color:#fff;
+    font-size:16px;
+}
+
+#recordingStatus{
+    display:none;
+    position:relative;
+    left:auto;
+    bottom:auto;
+    transform:none;
+    width:calc(100% - 30px);
+    max-width:650px;
+    margin:0 auto 8px;
+    background:#300c12;
+    border:1px solid rgba(255,40,40,.65);
+    color:#ff6767;
+    border-radius:13px;
+    padding:9px 12px;
+    z-index:25;
+    font-size:12px;
+    font-weight:bold;
+    text-align:center;
+    box-shadow:0 7px 22px rgba(0,0,0,.5);
+    animation:recordBlink .9s infinite;
+}
+
+@keyframes recordBlink{
+    0%,100%{opacity:.65;}
+    50%{opacity:1;}
+}
+
+.empty-chat{
+    min-height:200px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:#72839a;
+    padding:30px;
+}
+
+.empty-chat strong{
+    display:block;
+    color:#ffd700;
+    font-size:17px;
+    margin-bottom:7px;
+}
+
+@media(max-width:600px){
+
+    .header{
+        min-height:58px;
+    }
+
+    .header-title{
+        font-size:19px;
+    }
+
+    .chat-info{
+        min-height:46px;
+    }
+
+    #messages{
+        padding-left:8px;
+        padding-right:8px;
+        padding-bottom:15px;
+    }
+
+    .message{
+        max-width:86%;
+    }
+
+    .message-text{
+        font-size:14px;
+    }
+
+    #composer{
+        width:calc(100% - 12px);
+    }
+
+    .composer-inner{
+        padding:6px;
+        gap:5px;
+    }
+
+    #attachBtn{
+        width:41px;
+        height:41px;
+        flex-basis:41px;
+    }
+
+    #sendBtn{
+        width:45px;
+        height:45px;
+        flex-basis:45px;
+    }
+
+    #messageInput{
+        min-height:41px;
+        font-size:14px;
+        padding:10px 12px;
+    }
+
+    #attachMenu{
+        left:0;
+        bottom:60px;
+    }
+
+    #replyBox,
+    #filePreview,
+    #recordingStatus{
+        width:calc(100% - 20px);
+    }
+
+}
+
+@media(max-width:360px){
+
+    #attachBtn{
+        width:38px;
+        height:38px;
+        flex-basis:38px;
+        font-size:23px;
+    }
+
+    #sendBtn{
+        width:42px;
+        height:42px;
+        flex-basis:42px;
+    }
+
+    #messageInput{
+        font-size:13px;
+    }
+
+}
+
+.hidden-file{
+    display:none !important;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="loading">
+    <div class="loader"></div>
+</div>
+
+<div id="app">
+
+<section id="profileScreen" class="screen center-screen">
+
+    <div class="card">
+
+        <h2>💬 KULZZY CHAT</h2>
+
+        <p>
+            Create your profile to start your private conversation
+            with Kulzzy Radio.
+        </p>
+
+        <input
+            id="nameInput"
+            class="input"
+            type="text"
+            maxlength="50"
+            placeholder="Enter your name">
+
+        <button
+            id="createProfileBtn"
+            class="primary-btn">
+            CONTINUE
+        </button>
+
+    </div>
+
+</section>
+
+<section id="codeScreen" class="screen center-screen">
+
+    <div class="card">
+
+        <h2>Your Chat Code</h2>
+
+        <p>
+            Your private Kulzzy Chat code is:
+        </p>
+
+        <div
+            id="chatCodeDisplay"
+            style="
+                text-align:center;
+                color:#ffd700;
+                font-size:28px;
+                font-weight:900;
+                letter-spacing:2px;
+                margin:20px 0;
+            ">
+        </div>
+
+        <p class="small-text">
+            Keep this code safe. It identifies your private
+            conversation.
+        </p>
+
+        <button
+            id="openChatBtn"
+            class="primary-btn">
+            OPEN CHAT
+        </button>
+
+    </div>
+
+</section>
+
+<section id="chatScreen" class="screen">
+
+    <div id="chatPage">
+
+        <div class="header">
+            <div class="header-title">
+                💬 KULZZY CHAT
+            </div>
+        </div>
+
+        <div class="chat-info">
+
+            <div class="chat-user">
+
+                <div id="chatName" class="chat-name">
+                    KULZZY RADIO
+                </div>
+
+                <div id="chatCode" class="chat-code"></div>
+
+            </div>
+
+            <button id="notificationBtn">
+                🔔 Notifications
+            </button>
+
+        </div>
+
+        <div id="messages">
+
+            <div class="empty-chat">
+
+                <div>
+
+                    <strong>KULZZY RADIO</strong>
+
+                    Your private conversation with Kulzzy Radio
+                    will appear here.
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="replyBox">
+
+            <div class="reply-title">
+                Replying to message
+            </div>
+
+            <div id="replyText" class="reply-text"></div>
+
+            <button id="cancelReply">
+                ×
+            </button>
+
+        </div>
+
+        <div id="filePreview">
+
+            <span id="filePreviewText"></span>
+
+            <button id="clearFile">
+                ×
+            </button>
+
+        </div>
+
+        <div id="recordingStatus">
+            🔴 Recording voice note... Tap + → Stop & Send
+        </div>
+
+        <div id="composer">
+
+            <div id="attachMenu">
+
+                <button id="pictureOption" class="attach-option">
+
+                    <span class="attach-icon">
+                        📷
+                    </span>
+
+                    Picture
+
+                </button>
+
+                <button id="videoOption" class="attach-option">
+
+                    <span class="attach-icon">
+                        🎥
+                    </span>
+
+                    Video
+
+                </button>
+
+                <button id="voiceOption" class="attach-option">
+
+                    <span class="attach-icon">
+                        🎙️
+                    </span>
+
+                    <span id="voiceOptionText">
+                        Voice note
+                    </span>
+
+                </button>
+
+            </div>
+
+            <div class="composer-inner">
+
+                <button
+                    id="attachBtn"
+                    aria-label="Attachments">
+                    +
+                </button>
+
+                <textarea
+                    id="messageInput"
+                    rows="1"
+                    maxlength="5000"
+                    placeholder="Write a message..."></textarea>
+
+                <button
+                    id="sendBtn"
+                    aria-label="Send message">
+                    ➤
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</div>
+
+<input
+id="fileInput"
+class="hidden-file"
+type="file"
+accept="image/*,video/*">
+
+<script>
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyDsCePNnY6LeQot2F36v6eD7n3k",
+
+    authDomain:
+        "kulzzy-chat.firebaseapp.com",
+
+    databaseURL:
+        "https://kulzzy-chat-default-rtdb.europe-west1.firebasedatabase.app",
+
+    projectId:
+        "kulzzy-chat",
+
+    storageBucket:
+        "kulzzy-chat.firebasestorage.app",
+
+    messagingSenderId:
+        "780479389980",
+
+    appId:
+        "1:780479389980:web:39c5c35bca1a673a5cdad9",
+
+    measurementId:
+        "G-CZMLV3SRPS"
+};
+
+if(!firebase.apps.length){
+    firebase.initializeApp(firebaseConfig);
+}
+
+const auth = firebase.auth();
+const db = firebase.database();
+
+const CLOUDINARY_UPLOAD_URL =
+    "https://api.cloudinary.com/v1_1/s4j0x7dk/auto/upload";
+
+const CLOUDINARY_UPLOAD_PRESET =
+    "kulzzy_chat";
+
+window.OneSignalDeferred =
+    window.OneSignalDeferred || [];
+
+OneSignalDeferred.push(async function(OneSignal){
+
+    try{
+
+        await OneSignal.init({
+
+            appId:
+                "cd457ce6-826f-44f7-b653-c371feb790b6",
+
+            safari_web_id:
+                "web.onesignal.auto.15375e9b-dec0-4164-84de-dd8ada8f8fb7",
+
+            notifyButton:{
+                enable:false
+            }
+
+        });
+
+    }catch(error){
+
+        console.log(
+            "OneSignal initialization:",
+            error
+        );
+
+    }
+
+});
+
+const loading =
+    document.getElementById("loading");
+
+const profileScreen =
+    document.getElementById("profileScreen");
+
+const codeScreen =
+    document.getElementById("codeScreen");
+
+const chatScreen =
+    document.getElementById("chatScreen");
+
+const chatPage =
+    document.getElementById("chatPage");
+
+const nameInput =
+    document.getElementById("nameInput");
+
+const createProfileBtn =
+    document.getElementById("createProfileBtn");
+
+const openChatBtn =
+    document.getElementById("openChatBtn");
+
+const chatCodeDisplay =
+    document.getElementById("chatCodeDisplay");
+
+const chatName =
+    document.getElementById("chatName");
+
+const chatCode =
+    document.getElementById("chatCode");
+
+const messages =
+    document.getElementById("messages");
+
+const notificationBtn =
+    document.getElementById("notificationBtn");
+
+const attachBtn =
+    document.getElementById("attachBtn");
+
+const attachMenu =
+    document.getElementById("attachMenu");
+
+const pictureOption =
+    document.getElementById("pictureOption");
+
+const videoOption =
+    document.getElementById("videoOption");
+
+const voiceOption =
+    document.getElementById("voiceOption");
+
+const voiceOptionText =
+    document.getElementById("voiceOptionText");
+
+const messageInput =
+    document.getElementById("messageInput");
+
+const sendBtn =
+    document.getElementById("sendBtn");
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const filePreview =
+    document.getElementById("filePreview");
+
+const filePreviewText =
+    document.getElementById("filePreviewText");
+
+const clearFile =
+    document.getElementById("clearFile");
+
+const replyBox =
+    document.getElementById("replyBox");
+
+const replyText =
+    document.getElementById("replyText");
+
+const cancelReply =
+    document.getElementById("cancelReply");
+
+const recordingStatus =
+    document.getElementById("recordingStatus");
+
+let currentUser = null;
+let currentProfile = null;
+let currentChatCode = null;
+let selectedFile = null;
+let selectedFileType = null;
+let replyTo = null;
+let messagesListenerStarted = false;
+
+let mediaRecorder = null;
+let mediaStream = null;
+let audioChunks = [];
+let recordingMimeType = "";
+let isRecording = false;
+
+function showScreen(screen){
+
+    profileScreen.classList.remove("active");
+    codeScreen.classList.remove("active");
+    chatScreen.classList.remove("active");
+
+    screen.classList.add("active");
+
+}
+
+auth.onAuthStateChanged(async function(user){
+
+    if(user){
+
+        currentUser = user;
+
+        try{
+
+            const snapshot =
+                await db
+                .ref("users/" + user.uid)
+                .once("value");
+
+            if(snapshot.exists()){
+
+                currentProfile =
+                    snapshot.val();
+
+                currentChatCode =
+                    currentProfile.chatCode;
+
+                if(currentProfile.name){
+
+                    chatName.textContent =
+                        "KING 👑 " +
+                        currentProfile.name;
+
+                }
+
+                chatCode.textContent =
+                    currentChatCode
+                    ? "Code: " +
+                      currentChatCode
+                    : "";
+
+                showScreen(chatScreen);
+
+                startMessagesListener();
+
+                setupOneSignalForUser();
+
+            }else{
+
+                showScreen(profileScreen);
+
+            }
+
+        }catch(error){
+
+            console.error(error);
+
+            showScreen(profileScreen);
+
+        }
+
+    }else{
+
+        try{
+
+            await auth.signInAnonymously();
+
+        }catch(error){
+
+            console.error(
+                "Anonymous authentication error:",
+                error
+            );
+
+            alert(
+                "Unable to connect to Kulzzy Chat. Please check your internet connection."
+            );
+
+        }
+
+    }
+
+    loading.style.display = "none";
+
+});
+
+createProfileBtn.addEventListener(
+    "click",
+    createProfile
+);
+
+nameInput.addEventListener(
+    "keydown",
+    function(e){
+
+        if(e.key === "Enter"){
+
+            e.preventDefault();
+
+            createProfile();
+
+        }
+
+    }
+);
+
+async function createProfile(){
+
+    if(!currentUser){
+
+        alert(
+            "Please wait for the connection to finish."
+        );
+
+        return;
+
+    }
+
+    const name =
+        nameInput.value.trim();
+
+    if(!name){
+
+        alert(
+            "Please enter your name."
+        );
+
+        nameInput.focus();
+
+        return;
+
+    }
+
+    createProfileBtn.disabled = true;
+
+    try{
+
+        const chatCode =
+            await generateUniqueChatCode();
+
+        const profile = {
+
+            name:name,
+
+            chatCode:chatCode,
+
+            uid:currentUser.uid,
+
+            createdAt:
+                firebase.database.ServerValue.TIMESTAMP
+
+        };
+
+        await db
+            .ref("users/" + currentUser.uid)
+            .set(profile);
+
+        currentProfile = profile;
+        currentChatCode = chatCode;
+
+        chatCodeDisplay.textContent =
+            chatCode;
+
+        chatName.textContent =
+            "KING 👑 " + name;
+
+        chatCode.textContent =
+            "Code: " + chatCode;
+
+        showScreen(codeScreen);
+
+    }catch(error){
+
+        console.error(error);
+
+        alert(
+            "Could not create your profile. Please try again."
+        );
+
+    }
+
+    createProfileBtn.disabled = false;
+
+}
+
+async function generateUniqueChatCode(){
+
+    let code;
+    let exists = true;
+    let attempts = 0;
+
+    while(exists && attempts < 20){
+
+        attempts++;
+
+        code =
+            "KULZZY" +
+            Math.floor(
+                100000 +
+                Math.random() * 900000
+            );
+
+        const snapshot =
+            await db
+            .ref("chatCodes/" + code)
+            .once("value");
+
+        exists =
+            snapshot.exists();
+
+    }
+
+    if(exists){
+
+        throw new Error(
+            "Could not generate unique chat code."
+        );
+
+    }
+
+    await db
+        .ref("chatCodes/" + code)
+        .set({
+            uid:currentUser.uid,
+            createdAt:
+                firebase.database.ServerValue.TIMESTAMP
+        });
+
+    return code;
+
+}
+
+openChatBtn.addEventListener(
+    "click",
+    function(){
+
+        showScreen(chatScreen);
+        startMessagesListener();
+
+    }
+);
+
+function startMessagesListener(){
+
+    if(!currentUser){
+        return;
+    }
+
+    if(messagesListenerStarted){
+        return;
+    }
+
+    messagesListenerStarted = true;
+
+    const path =
+        "conversations/" +
+        currentUser.uid +
+        "/messages";
+
+    db.ref(path)
+      .limitToLast(200)
+      .on(
+          "value",
+          function(snapshot){
+
+              messages.innerHTML = "";
+
+              if(!snapshot.exists()){
+
+                  messages.innerHTML = `
+                    <div class="empty-chat">
+                        <div>
+                            <strong>KULZZY RADIO</strong>
+                            Your private conversation with
+                            Kulzzy Radio will appear here.
+                        </div>
+                    </div>
+                  `;
+
+                  return;
+
+              }
+
+              const data =
+                  snapshot.val();
+
+              Object.keys(data).forEach(
+                  function(key){
+
+                      renderMessage(
+                          data[key],
+                          key
+                      );
+
+                  }
+              );
+
+              scrollMessagesToBottom();
+
+          },
+          function(error){
+
+              console.error(
+                  "Message listener error:",
+                  error
+              );
+
+          }
+      );
+
+}
+
+function renderMessage(data, messageId){
+
+    const mine =
+        data.senderUid === currentUser.uid;
+
+    const row =
+        document.createElement("div");
+
+    row.className =
+        "message-row " +
+        (mine ? "mine" : "theirs");
+
+    const bubble =
+        document.createElement("div");
+
+    bubble.className =
+        "message " +
+        (mine ? "mine" : "theirs");
+
+    if(data.replyTo){
+
+        const replyContainer =
+            document.createElement("div");
+
+        replyContainer.style.cssText =
+            "border-left:3px solid #ffd700;" +
+            "background:rgba(0,0,0,.18);" +
+            "border-radius:7px;" +
+            "padding:5px 7px;" +
+            "margin-bottom:7px;" +
+            "font-size:11px;" +
+            "color:#b8c4d5;";
+
+        replyContainer.textContent =
+            "↩ " +
+            (data.replyTo.text ||
+             getMediaReplyText(data.replyTo));
+
+        bubble.appendChild(
+            replyContainer
+        );
+
+    }
+
+    if(
+        data.mediaType === "image" &&
+        data.mediaUrl
+    ){
+
+        const label =
+            document.createElement("div");
+
+        label.className =
+            "media-label";
+
+        label.textContent =
+            "📷 Picture";
+
+        bubble.appendChild(label);
+
+        const img =
+            document.createElement("img");
+
+        img.src =
+            data.mediaUrl;
+
+        img.alt =
+            "Picture";
+
+        img.loading =
+            "lazy";
+
+        img.addEventListener(
+            "click",
+            function(){
+
+                window.open(
+                    data.mediaUrl,
+                    "_blank"
+                );
+
+            }
+        );
+
+        bubble.appendChild(img);
+
+    }
+
+    if(
+        data.mediaType === "video" &&
+        data.mediaUrl
+    ){
+
+        const label =
+            document.createElement("div");
+
+        label.className =
+            "media-label";
+
+        label.textContent =
+            "🎥 Video";
+
+        bubble.appendChild(label);
+
+        const video =
+            document.createElement("video");
+
+        video.src =
+            data.mediaUrl;
+
+        video.controls = true;
+        video.playsInline = true;
+        video.preload = "metadata";
+
+        bubble.appendChild(video);
+
+    }
+
+    if(
+        data.mediaType === "audio" &&
+        data.mediaUrl
+    ){
+
+        const label =
+            document.createElement("div");
+
+        label.className =
+            "media-label";
+
+        label.textContent =
+            "🎙️ Voice note";
+
+        bubble.appendChild(label);
+
+        const audio =
+            document.createElement("audio");
+
+        audio.src =
+            data.mediaUrl;
+
+        audio.controls = true;
+        audio.preload = "metadata";
+
+        bubble.appendChild(audio);
+
+    }
+
+    if(data.text){
+
+        const text =
+            document.createElement("div");
+
+        text.className =
+            "message-text";
+
+        text.textContent =
+            data.text;
+
+        bubble.appendChild(text);
+
+    }
+
+    const time =
+        document.createElement("div");
+
+    time.className =
+        "message-time";
+
+    time.textContent =
+        formatTime(
+            data.createdAt ||
+            data.timestamp
+        );
+
+    bubble.appendChild(time);
+
+    if(!mine){
+
+        bubble.addEventListener(
+            "click",
+            function(e){
+
+                if(
+                    e.target.tagName === "AUDIO" ||
+                    e.target.tagName === "VIDEO" ||
+                    e.target.tagName === "IMG"
+                ){
+                    return;
+                }
+
+                setReply(data);
+
+            }
+        );
+
+    }
+
+    row.appendChild(bubble);
+
+    messages.appendChild(row);
+
+}
+
+function setReply(data){
+
+    replyTo = {
+
+        id:data.id || null,
+
+        text:
+            data.text ||
+            getMediaReplyText(data)
+
+    };
+
+    replyText.textContent =
+        replyTo.text;
+
+    replyBox.style.display =
+        "block";
+
+    messageInput.focus();
+
+}
+
+function getMediaReplyText(data){
+
+    if(data.mediaType === "image"){
+        return "📷 Picture";
+    }
+
+    if(data.mediaType === "video"){
+        return "🎥 Video";
+    }
+
+    if(data.mediaType === "audio"){
+        return "🎙️ Voice note";
+    }
+
+    return "Media message";
+
+}
+
+cancelReply.addEventListener(
+    "click",
+    clearReply
+);
+
+function clearReply(){
+
+    replyTo = null;
+
+    replyBox.style.display =
+        "none";
+
+    replyText.textContent =
+        "";
+
+}
+
+attachBtn.addEventListener(
+    "click",
+    function(e){
+
+        e.stopPropagation();
+
+        if(isRecording){
+            return;
+        }
+
+        attachMenu.classList.toggle(
+            "show"
+        );
+
+    }
+);
+
+document.addEventListener(
+    "click",
+    function(e){
+
+        if(
+            !attachMenu.contains(e.target) &&
+            e.target !== attachBtn
+        ){
+
+            attachMenu.classList.remove(
+                "show"
+            );
+
+        }
+
+    }
+);
+
+pictureOption.addEventListener(
+    "click",
+    function(){
+
+        if(isRecording){
+            return;
+        }
+
+        fileInput.accept =
+            "image/*";
+
+        fileInput.value =
+            "";
+
+        attachMenu.classList.remove(
+            "show"
+        );
+
+        fileInput.click();
+
+    }
+);
+
+videoOption.addEventListener(
+    "click",
+    function(){
+
+        if(isRecording){
+            return;
+        }
+
+        fileInput.accept =
+            "video/*";
+
+        fileInput.value =
+            "";
+
+        attachMenu.classList.remove(
+            "show"
+        );
+
+        fileInput.click();
+
+    }
+);
+
+fileInput.addEventListener(
+    "change",
+    function(){
+
+        const file =
+            fileInput.files &&
+            fileInput.files[0];
+
+        if(!file){
+            return;
+        }
+
+        selectedFile =
+            file;
+
+        if(file.type.startsWith("image/")){
+
+            selectedFileType =
+                "image";
+
+            filePreviewText.textContent =
+                "📷 " +
+                file.name;
+
+        }else if(
+            file.type.startsWith("video/")
+        ){
+
+            selectedFileType =
+                "video";
+
+            filePreviewText.textContent =
+                "🎥 " +
+                file.name;
+
+        }else{
+
+            selectedFile = null;
+            selectedFileType = null;
+
+            alert(
+                "Please select a picture or video."
+            );
+
+            return;
+
+        }
+
+        filePreview.style.display =
+            "block";
+
+        fileInput.value =
+            "";
+
+        scrollMessagesToBottom();
+
+    }
+);
+
+clearFile.addEventListener(
+    "click",
+    clearSelectedFile
+);
+
+function clearSelectedFile(){
+
+    selectedFile = null;
+    selectedFileType = null;
+
+    filePreview.style.display =
+        "none";
+
+    filePreviewText.textContent =
+        "";
+
+    fileInput.value =
+        "";
+
+}
+
+voiceOption.addEventListener(
+    "click",
+    async function(){
+
+        if(isRecording){
+            await stopVoiceRecording();
+        }else{
+            await startVoiceRecording();
+        }
+
+    }
+);
+
+function getSupportedAudioMimeType(){
+
+    const types = [
+
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg"
+
+    ];
+
+    for(const type of types){
+
+        if(
+            window.MediaRecorder &&
+            MediaRecorder.isTypeSupported &&
+            MediaRecorder.isTypeSupported(type)
+        ){
+
+            return type;
+
+        }
+
+    }
+
+    return "";
+
+}
+
+async function startVoiceRecording(){
+
+    if(
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+    ){
+
+        alert(
+            "Voice recording is not supported by this browser."
+        );
+
+        return;
+
+    }
+
+    try{
+
+        clearSelectedFile();
+
+        attachMenu.classList.remove(
+            "show"
+        );
+
+        mediaStream =
+            await navigator.mediaDevices.getUserMedia({
+                audio:true
+            });
+
+        audioChunks = [];
+
+        recordingMimeType =
+            getSupportedAudioMimeType();
+
+        if(recordingMimeType){
+
+            mediaRecorder =
+                new MediaRecorder(
+                    mediaStream,
+                    {
+                        mimeType:
+                            recordingMimeType
+                    }
+                );
+
+        }else{
+
+            mediaRecorder =
+                new MediaRecorder(
+                    mediaStream
+                );
+
+        }
+
+        mediaRecorder.ondataavailable =
+            function(event){
+
+                if(
+                    event.data &&
+                    event.data.size > 0
+                ){
+
+                    audioChunks.push(
+                        event.data
+                    );
+
+                }
+
+            };
+
+        mediaRecorder.onerror =
+            function(event){
+
+                console.error(
+                    "MediaRecorder error:",
+                    event
+                );
+
+                stopVoiceRecordingCleanup();
+
+                alert(
+                    "Voice recording failed."
+                );
+
+            };
+
+        mediaRecorder.onstop =
+            async function(){
+
+                const actualType =
+                    mediaRecorder.mimeType ||
+                    recordingMimeType ||
+                    "audio/webm";
+
+                const audioBlob =
+                    new Blob(
+                        audioChunks,
+                        {
+                            type:actualType
+                        }
+                    );
+
+                stopVoiceRecordingCleanup();
+
+                if(audioBlob.size > 0){
+
+                    await sendVoiceNote(
+                        audioBlob,
+                        actualType
+                    );
+
+                }
+
+            };
+
+        mediaRecorder.start();
+
+        isRecording = true;
+
+        recordingStatus.style.display =
+            "block";
+
+        voiceOptionText.textContent =
+            "Stop & Send";
+
+        voiceOption.querySelector(
+            ".attach-icon"
+        ).textContent =
+            "⏹️";
+
+        attachBtn.textContent =
+            "×";
+
+        attachBtn.style.color =
+            "#ff4b4b";
+
+    }catch(error){
+
+        console.error(error);
+
+        stopVoiceRecordingCleanup();
+
+        if(
+            error.name ===
+            "NotAllowedError"
+        ){
+
+            alert(
+                "Microphone permission was denied. Please allow microphone access and try again."
+            );
+
+        }else{
+
+            alert(
+                "Could not access your microphone."
+            );
+
+        }
+
+    }
+
+}
+
+async function stopVoiceRecording(){
+
+    if(
+        !mediaRecorder ||
+        mediaRecorder.state === "inactive"
+    ){
+
+        stopVoiceRecordingCleanup();
+
+        return;
+
+    }
+
+    try{
+
+        mediaRecorder.stop();
+
+    }catch(error){
+
+        console.error(error);
+
+        stopVoiceRecordingCleanup();
+
+    }
+
+}
+
+function stopVoiceRecordingCleanup(){
+
+    isRecording = false;
+
+    recordingStatus.style.display =
+        "none";
+
+    voiceOptionText.textContent =
+        "Voice note";
+
+    voiceOption.querySelector(
+        ".attach-icon"
+    ).textContent =
+        "🎙️";
+
+    attachBtn.textContent =
+        "+";
+
+    attachBtn.style.color =
+        "#ffd700";
+
+    if(mediaStream){
+
+        mediaStream
+            .getTracks()
+            .forEach(
+                function(track){
+                    track.stop();
+                }
+            );
+
+    }
+
+    mediaStream = null;
+    mediaRecorder = null;
+    audioChunks = [];
+
+}
+
+async function sendVoiceNote(
+    audioBlob,
+    mimeType
+){
+
+    if(!currentUser){
+
+        alert(
+            "Chat is not connected."
+        );
+
+        return;
+
+    }
+
+    sendBtn.disabled = true;
+    attachBtn.disabled = true;
+
+    try{
+
+        const extension =
+            mimeType.includes("mp4")
+            ? "m4a"
+            : mimeType.includes("ogg")
+            ? "ogg"
+            : "webm";
+
+        const file =
+            new File(
+                [audioBlob],
+                "voice-note-" +
+                Date.now() +
+                "." +
+                extension,
+                {
+                    type:mimeType
+                }
+            );
+
+        const mediaUrl =
+            await uploadToCloudinary(file);
+
+        await pushMessage({
+
+            text:"",
+
+            mediaType:"audio",
+
+            mediaUrl:mediaUrl,
+
+            replyTo:replyTo,
+
+            senderUid:
+                currentUser.uid,
+
+            senderName:
+                currentProfile
+                ? currentProfile.name
+                : "User",
+
+            timestamp:
+                firebase.database.ServerValue.TIMESTAMP
+
+        });
+
+        clearReply();
+
+    }catch(error){
+
+        console.error(
+            "Voice upload error:",
+            error
+        );
+
+        alert(
+            "Voice note could not be sent. Please try again."
+        );
+
+    }
+
+    attachBtn.disabled = false;
+    sendBtn.disabled = false;
+
+}
+
+sendBtn.addEventListener(
+    "click",
+    sendMessage
+);
+
+messageInput.addEventListener(
+    "keydown",
+    function(e){
+
+        if(
+            e.key === "Enter" &&
+            !e.shiftKey
+        ){
+
+            e.preventDefault();
+
+            sendMessage();
+
+        }
+
+    }
+);
+
+async function sendMessage(){
+
+    if(isRecording){
+
+        await stopVoiceRecording();
+
+        return;
+
+    }
+
+    const text =
+        messageInput.value.trim();
+
+    if(
+        !text &&
+        !selectedFile
+    ){
+
+        return;
+
+    }
+
+    if(!currentUser){
+
+        alert(
+            "Chat is not connected."
+        );
+
+        return;
+
+    }
+
+    sendBtn.disabled = true;
+
+    try{
+
+        let mediaUrl = null;
+        let mediaType = null;
+
+        if(selectedFile){
+
+            mediaUrl =
+                await uploadToCloudinary(
+                    selectedFile
+                );
+
+            mediaType =
+                selectedFileType;
+
+        }
+
+        await pushMessage({
+
+            text:text,
+
+            mediaType:mediaType,
+
+            mediaUrl:mediaUrl,
+
+            replyTo:replyTo,
+
+            senderUid:
+                currentUser.uid,
+
+            senderName:
+                currentProfile
+                ? currentProfile.name
+                : "User",
+
+            timestamp:
+                firebase.database.ServerValue.TIMESTAMP
+
+        });
+
+        messageInput.value = "";
+
+        messageInput.style.height =
+            "43px";
+
+        clearSelectedFile();
+        clearReply();
+
+    }catch(error){
+
+        console.error(
+            "Send message error:",
+            error
+        );
+
+        alert(
+            "Message could not be sent. Please try again."
+        );
+
+    }
+
+    sendBtn.disabled = false;
+
+}
+
+async function pushMessage(message){
+
+    const path =
+        "conversations/" +
+        currentUser.uid +
+        "/messages";
+
+    const newMessage =
+        db.ref(path).push();
+
+    message.id =
+        newMessage.key;
+
+    await newMessage.set(
+        message
+    );
+
+}
+
+async function uploadToCloudinary(file){
+
+    if(!file){
+
+        throw new Error(
+            "No file selected."
+        );
+
+    }
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "file",
+        file
+    );
+
+    formData.append(
+        "upload_preset",
+        CLOUDINARY_UPLOAD_PRESET
+    );
+
+    const response =
+        await fetch(
+            CLOUDINARY_UPLOAD_URL,
+            {
+                method:"POST",
+                body:formData
+            }
+        );
+
+    if(!response.ok){
+
+        let errorText = "";
+
+        try{
+            errorText =
+                await response.text();
+        }catch(e){
+            errorText =
+                "Cloudinary upload failed.";
+        }
+
+        throw new Error(
+            errorText ||
+            "Cloudinary upload failed."
+        );
+
+    }
+
+    const result =
+        await response.json();
+
+    if(!result.secure_url){
+
+        throw new Error(
+            "Cloudinary did not return a secure URL."
+        );
+
+    }
+
+    return result.secure_url;
+
+}
+
+messageInput.addEventListener(
+    "input",
+    function(){
+
+        this.style.height =
+            "43px";
+
+        this.style.height =
+            Math.min(
+                this.scrollHeight,
+                110
+            ) + "px";
+
+    }
+);
+
+function scrollMessagesToBottom(){
+
+    requestAnimationFrame(
+        function(){
+
+            chatPage.scrollTop =
+                chatPage.scrollHeight;
+
+        }
+    );
+
+}
+
+function formatTime(timestamp){
+
+    if(!timestamp){
+        return "";
+    }
+
+    const date =
+        new Date(timestamp);
+
+    if(isNaN(date.getTime())){
+        return "";
+    }
+
+    return date.toLocaleTimeString(
+        [],
+        {
+            hour:"2-digit",
+            minute:"2-digit"
+        }
+    );
+
+}
+
+async function setupOneSignalForUser(){
+
+    try{
+
+        if(!window.OneSignalDeferred){
+            return;
+        }
+
+        OneSignalDeferred.push(
+            async function(OneSignal){
+
+                try{
+
+                    if(
+                        OneSignal.User &&
+                        OneSignal.User.PushSubscription
+                    ){
+
+                        const externalId =
+                            currentUser.uid;
+
+                        try{
+
+                            await OneSignal.login(
+                                externalId
+                            );
+
+                        }catch(error){
+
+                            console.log(
+                                "OneSignal login:",
+                                error
+                            );
+
+                        }
+
+                    }
+
+                }catch(error){
+
+                    console.log(
+                        "OneSignal user setup:",
+                        error
+                    );
+
+                }
+
+            }
+        );
+
+    }catch(error){
+
+        console.log(
+            "OneSignal setup error:",
+            error
+        );
+
+    }
+
+}
+
+notificationBtn.addEventListener(
+    "click",
+    async function(){
+
+        try{
+
+            if(!window.OneSignalDeferred){
+
+                alert(
+                    "Notifications are not available right now."
+                );
+
+                return;
+
+            }
+
+            OneSignalDeferred.push(
+                async function(OneSignal){
+
+                    try{
+
+                        if(OneSignal.Notifications){
+
+                            await OneSignal.Notifications
+                                .requestPermission();
+
+                        }
+
+                    }catch(error){
+
+                        console.error(error);
+
+                    }
+
+                }
+            );
+
+        }catch(error){
+
+            console.error(error);
+
+        }
+
+    }
+);
+
+window.addEventListener(
+    "load",
+    function(){
+
+        setTimeout(
+            function(){
+
+                if(
+                    loading.style.display !==
+                    "none"
+                ){
+
+                    loading.style.display =
+                        "none";
+
+                }
+
+            },
+            10000
+        );
+
+    }
+);
+
+</script>
+
+</body>
+</html>
