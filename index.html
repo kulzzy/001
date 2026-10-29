@@ -186,15 +186,16 @@ button{cursor:pointer;touch-action:manipulation}
   It stays above audio players and the scrolling message history.
 */
 .composer{
-  position:relative;
-  z-index:20;
+  position:sticky;
+  bottom:0;
+  z-index:100;
   flex:0 0 auto;
   width:100%;
   background:#06152d;
   border-top:1px solid #263653;
   padding:20px;
   padding-bottom:max(10px,env(safe-area-inset-bottom));
-  box-shadow:0 -5px 18px #0005
+  box-shadow:0 -5px 18px #0005;
 }
 
 .attachPreview{
