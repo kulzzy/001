@@ -1,38 +1,264 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#020b1b">
 <title>Kulzzy Chat</title>
+
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#020b1b;color:#fff}
-button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation}.hidden{display:none!important}
-#loginScreen{position:fixed;inset:0;background:#020b1b;display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
-.loginBox{width:100%;max-width:430px;background:#06152d;border:1px solid #c9a227;border-radius:20px;padding:30px 22px;text-align:center;box-shadow:0 10px 40px #0007}
-.logoText{color:#ffd700;font-size:30px;font-weight:900}.loginTitle{font-size:22px;font-weight:800;margin:15px 0 8px}.loginSub{color:#b9c4d6;font-size:14px;line-height:1.5;margin-bottom:22px}
-#nameInput{width:100%;height:50px;border:1px solid #43516a;background:#020b1b;color:#fff;border-radius:12px;padding:0 15px;outline:none}#nameInput:focus{border-color:#ffd700}
-.startBtn{width:100%;height:50px;margin-top:13px;border:0;border-radius:12px;background:#ffd700;color:#06152d;font-weight:900;font-size:16px}
-#chatScreen{position:fixed;inset:0;display:none;flex-direction:column;background:#020b1b}#chatScreen.active{display:flex}
-.chatHeader{height:66px;min-height:66px;background:#06152d;border-bottom:1px solid #263653;display:flex;align-items:center;padding:0 14px;gap:12px}
-.headerLogo{width:43px;height:43px;min-width:43px;border-radius:50%;background:#ffd700;color:#06152d;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:900}
-.headerInfo{flex:1;min-width:0}.headerTitle{font-size:17px;font-weight:900}.headerStatus{color:#7ee787;font-size:12px;margin-top:3px}.refreshBtn{border:0;background:transparent;color:#ffd700;font-size:23px;padding:8px}
-#messages{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 10px 12px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
-.emptyChat{min-height:200px;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:#9da9bc;padding:30px}.emptyInner{max-width:320px}.emptyIcon{font-size:45px;margin-bottom:10px}
-.messageRow{width:100%;display:flex;margin:5px 0}.messageRow.user{justify-content:flex-end}.messageRow.admin{justify-content:flex-start}
-.messageBubble{max-width:82%;min-width:70px;padding:9px 11px;border-radius:14px;word-break:break-word}.messageRow.user .messageBubble{background:#075eaa;border-bottom-right-radius:4px}.messageRow.admin .messageBubble{background:#8b6d00;border-bottom-left-radius:4px}
-.senderName{font-size:11px;font-weight:800;margin-bottom:4px;opacity:.8}.messageText{font-size:15px;line-height:1.42;white-space:pre-wrap}.messageTime{font-size:9px;opacity:.65;text-align:right;margin-top:5px}
-.messageBubble img,.messageBubble video{display:block;width:100%;max-width:290px;max-height:350px;border-radius:9px;object-fit:contain;background:#000}.messageBubble audio{width:240px;max-width:100%}
-.composer{position:relative;z-index:5;background:#06152d;border-top:1px solid #263653;padding:8px;flex-shrink:0;padding-bottom:max(8px,env(safe-area-inset-bottom))}
-.attachPreview{display:none;padding:7px;margin-bottom:7px;background:#020b1b;border:1px solid #374761;border-radius:10px}.attachPreview.active{display:flex;align-items:center;gap:8px}.previewName{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12px}.removeFile{border:0;background:#b00020;color:#fff;width:30px;height:30px;border-radius:50%}
-.composerRow{display:flex;align-items:flex-end;gap:6px}.iconBtn{width:43px;height:43px;flex:none;border:0;border-radius:50%;background:#102443;color:#ffd700;font-size:20px}
-#messageInput{flex:1;min-width:0;max-height:120px;min-height:43px;resize:none;border:1px solid #40516d;border-radius:13px;background:#020b1b;color:#fff;padding:11px 13px;outline:none}#messageInput:focus{border-color:#ffd700}
-#sendBtn{width:46px;height:46px;flex:none;border:0;border-radius:50%;background:#ffd700;color:#06152d;font-size:19px;font-weight:900}#sendBtn:disabled{opacity:.45}.hiddenFile{display:none}
-.recording{display:none;align-items:center;gap:8px;color:#ff6b6b;font-size:13px;padding:6px 5px;background:#06152d}.recording.active{display:flex}.recordDot{width:9px;height:9px;border-radius:50%;background:#ff3030;animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.2}}
-#toast{position:fixed;left:50%;bottom:85px;transform:translateX(-50%);background:#111d31;border:1px solid #ffd700;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:100;display:none;max-width:90%;text-align:center}
+
+html,body{
+  margin:0;padding:0;width:100%;height:100%;height:100dvh;
+  overflow:hidden;font-family:Arial,Helvetica,sans-serif;
+  background:#020b1b;color:#fff
+}
+
+button,input,textarea{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+.hidden{display:none!important}
+
+#loginScreen{
+  position:fixed;inset:0;background:#020b1b;
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;z-index:50
+}
+
+.loginBox{
+  width:100%;max-width:430px;background:#06152d;
+  border:1px solid #c9a227;border-radius:20px;
+  padding:30px 22px;text-align:center;
+  box-shadow:0 10px 40px #0007
+}
+
+.logoText{color:#ffd700;font-size:30px;font-weight:900}
+.loginTitle{font-size:22px;font-weight:800;margin:15px 0 8px}
+.loginSub{color:#b9c4d6;font-size:14px;line-height:1.5;margin-bottom:22px}
+
+#nameInput{
+  width:100%;height:50px;border:1px solid #43516a;
+  background:#020b1b;color:#fff;border-radius:12px;
+  padding:0 15px;outline:none
+}
+
+#nameInput:focus{border-color:#ffd700}
+
+.startBtn{
+  width:100%;height:50px;margin-top:13px;border:0;
+  border-radius:12px;background:#ffd700;color:#06152d;
+  font-weight:900;font-size:16px
+}
+
+/* FULL SCREEN CHAT */
+#chatScreen{
+  position:fixed;top:0;right:0;bottom:0;left:0;
+  height:100%;height:100dvh;width:100%;
+  display:none;flex-direction:column;
+  overflow:hidden;background:#020b1b;
+  min-height:0
+}
+
+#chatScreen.active{display:flex}
+
+/* HEADER STAYS AT THE TOP */
+.chatHeader{
+  height:66px;min-height:66px;flex-shrink:0;
+  background:#06152d;border-bottom:1px solid #263653;
+  display:flex;align-items:center;padding:0 14px;gap:12px
+}
+
+.headerLogo{
+  width:43px;height:43px;min-width:43px;
+  border-radius:50%;background:#ffd700;color:#06152d;
+  display:flex;align-items:center;justify-content:center;
+  font-size:21px;font-weight:900
+}
+
+.headerInfo{flex:1;min-width:0}
+.headerTitle{font-size:17px;font-weight:900}
+.headerStatus{color:#7ee787;font-size:12px;margin-top:3px}
+
+.refreshBtn{
+  border:0;background:transparent;color:#ffd700;
+  font-size:23px;padding:8px
+}
+
+/*
+  ONLY THIS AREA SCROLLS.
+  Audio and video players remain inside this area.
+*/
+#messages{
+  flex:1 1 0%;
+  min-height:0;
+  height:0;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:14px 10px 24px;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  scrollbar-width:thin;
+  scrollbar-color:#43516a #020b1b
+}
+
+.emptyChat{
+  min-height:200px;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;color:#9da9bc;padding:30px
+}
+
+.emptyInner{max-width:320px}
+.emptyIcon{font-size:45px;margin-bottom:10px}
+
+.messageRow{
+  width:100%;display:flex;margin:8px 0;
+  flex-shrink:0
+}
+
+.messageRow.user{justify-content:flex-end}
+.messageRow.admin{justify-content:flex-start}
+
+.messageBubble{
+  max-width:85%;min-width:70px;
+  padding:9px 11px;border-radius:14px;
+  word-break:break-word;overflow-wrap:anywhere
+}
+
+.messageRow.user .messageBubble{
+  background:#075eaa;border-bottom-right-radius:4px
+}
+
+.messageRow.admin .messageBubble{
+  background:#8b6d00;border-bottom-left-radius:4px
+}
+
+.senderName{
+  font-size:11px;font-weight:800;
+  margin-bottom:4px;opacity:.8
+}
+
+.messageText{
+  font-size:15px;line-height:1.42;
+  white-space:pre-wrap
+}
+
+.messageTime{
+  font-size:10px;opacity:.7;text-align:right;margin-top:5px
+}
+
+.messageBubble img,
+.messageBubble video{
+  display:block;width:100%;max-width:290px;
+  max-height:350px;border-radius:9px;
+  object-fit:contain;background:#000
+}
+
+/* AUDIO PLAYER STAYS INSIDE THE SCROLLABLE MESSAGE */
+.messageBubble audio{
+  display:block;
+  width:min(270px,70vw);
+  max-width:100%;
+  min-width:0;
+  margin-top:6px;
+  position:relative;
+  z-index:1
+}
+
+/* VOICE RECORDING INDICATOR */
+.recording{
+  display:none;align-items:center;gap:8px;
+  color:#ff6b6b;font-size:13px;
+  padding:6px 10px;background:#06152d;
+  flex-shrink:0
+}
+
+.recording.active{display:flex}
+.recordDot{
+  width:9px;height:9px;border-radius:50%;
+  background:#ff3030;animation:pulse 1s infinite
+}
+
+@keyframes pulse{50%{opacity:.2}}
+
+/*
+  COMPOSER IS FIXED AT THE BOTTOM.
+  It stays above audio players and the scrolling message history.
+*/
+.composer{
+  position:relative;
+  z-index:20;
+  flex:0 0 auto;
+  width:100%;
+  background:#06152d;
+  border-top:1px solid #263653;
+  padding:8px;
+  padding-bottom:max(10px,env(safe-area-inset-bottom));
+  box-shadow:0 -5px 18px #0005
+}
+
+.attachPreview{
+  display:none;padding:7px;margin-bottom:7px;
+  background:#020b1b;border:1px solid #374761;
+  border-radius:10px
+}
+
+.attachPreview.active{display:flex;align-items:center;gap:8px}
+
+.previewName{
+  flex:1;overflow:hidden;white-space:nowrap;
+  text-overflow:ellipsis;font-size:12px
+}
+
+.removeFile{
+  border:0;background:#b00020;color:#fff;
+  width:30px;height:30px;border-radius:50%;flex-shrink:0
+}
+
+.composerRow{
+  display:flex;align-items:flex-end;gap:6px;width:100%
+}
+
+.iconBtn{
+  width:43px;height:43px;flex:0 0 43px;
+  border:0;border-radius:50%;background:#102443;
+  color:#ffd700;font-size:20px;
+  display:flex;align-items:center;justify-content:center
+}
+
+#messageInput{
+  flex:1 1 0%;width:0;min-width:0;
+  max-height:110px;min-height:43px;resize:none;
+  border:1px solid #40516d;border-radius:13px;
+  background:#020b1b;color:#fff;padding:11px 12px;
+  outline:none;line-height:20px;
+  overflow-y:auto
+}
+
+#messageInput:focus{border-color:#ffd700}
+
+#sendBtn{
+  width:46px;height:46px;flex:0 0 46px;
+  border:0;border-radius:50%;background:#ffd700;
+  color:#06152d;font-size:19px;font-weight:900
+}
+
+#sendBtn:disabled{opacity:.45}
+.hiddenFile{display:none}
+
+#toast{
+  position:fixed;left:50%;bottom:100px;
+  transform:translateX(-50%);
+  background:#111d31;border:1px solid #ffd700;
+  color:#fff;padding:10px 16px;border-radius:10px;
+  font-size:13px;z-index:100;display:none;
+  max-width:90%;text-align:center
+}
 </style>
 </head>
+
 <body>
+
 <section id="loginScreen">
   <div class="loginBox">
     <div class="logoText">KULZZY</div>
@@ -41,16 +267,40 @@ button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulati
     <input id="nameInput" type="text" maxlength="60" placeholder="Enter your name" autocomplete="name">
     <button class="startBtn" id="startBtn" type="button">START CHAT</button>
   </div>
-</section><section id="chatScreen">
+</section>
+
+<section id="chatScreen">
+
   <header class="chatHeader">
     <div class="headerLogo">K</div>
-    <div class="headerInfo"><div class="headerTitle">KULZZY RADIO</div><div class="headerStatus">● Online</div></div>
+    <div class="headerInfo">
+      <div class="headerTitle">KULZZY RADIO</div>
+      <div class="headerStatus">● Online</div>
+    </div>
     <button class="refreshBtn" id="refreshBtn" type="button" title="Refresh">↻</button>
   </header>
-  <main id="messages"><div class="emptyChat" id="emptyChat"><div class="emptyInner"><div class="emptyIcon">💬</div><div>Your private conversation with Kulzzy Radio will appear here.</div></div></div></main>
-  <div class="recording" id="recordingBar"><span class="recordDot"></span>Recording voice note... <span id="recordTime">0:00</span></div>
+
+  <main id="messages">
+    <div class="emptyChat" id="emptyChat">
+      <div class="emptyInner">
+        <div class="emptyIcon">💬</div>
+        <div>Your private conversation with Kulzzy Radio will appear here.</div>
+      </div>
+    </div>
+  </main>
+
+  <div class="recording" id="recordingBar">
+    <span class="recordDot"></span>
+    Recording voice note...
+    <span id="recordTime">0:00</span>
+  </div>
+
   <div class="composer">
-    <div class="attachPreview" id="attachPreview"><div class="previewName" id="previewName"></div><button class="removeFile" id="removeFile" type="button">×</button></div>
+    <div class="attachPreview" id="attachPreview">
+      <div class="previewName" id="previewName"></div>
+      <button class="removeFile" id="removeFile" type="button">×</button>
+    </div>
+
     <div class="composerRow">
       <button class="iconBtn" id="attachBtn" type="button" title="Attach picture or video">+</button>
       <input id="fileInput" class="hiddenFile" type="file" accept="image/*,video/*">
@@ -59,201 +309,566 @@ button,input,textarea{font:inherit}button{cursor:pointer;touch-action:manipulati
       <button id="sendBtn" type="button" title="Send">➤</button>
     </div>
   </div>
+
 </section>
-<div id="toast"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
 "use strict";
 
-/* KULZZY CHAT — SUPABASE SETTINGS */
 const SUPABASE_URL = "https://dzbceefbfousvcejoqog.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_alTxMwdBXOXVDuBg55kUBQ_-GPIohTF";
 const MEDIA_BUCKET = "participant-media";
 const USER_STORAGE_KEY = "kulzzy_new_chat_user";
 
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-let currentUser = null, selectedFile = null, mediaRecorder = null, recordedChunks = [];
-let recordingStartedAt = 0, recordingTimer = null, refreshTimer = null, lastRenderedSignature = "", toastTimer = null;
+const db = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+let currentUser = null;
+let selectedFile = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+let recordingStartedAt = 0;
+let recordingTimer = null;
+let refreshTimer = null;
+let lastRenderedSignature = "";
+let toastTimer = null;
 
 const $ = id => document.getElementById(id);
-const loginScreen=$("loginScreen"), chatScreen=$("chatScreen"), nameInput=$("nameInput"), startBtn=$("startBtn");
-const messagesBox=$("messages"), emptyChat=$("emptyChat"), messageInput=$("messageInput"), sendBtn=$("sendBtn");
-const attachBtn=$("attachBtn"), fileInput=$("fileInput"), voiceBtn=$("voiceBtn"), attachPreview=$("attachPreview");
-const previewName=$("previewName"), removeFile=$("removeFile"), recordingBar=$("recordingBar"), recordTime=$("recordTime");
-const refreshBtn=$("refreshBtn"), toast=$("toast");
+
+const loginScreen = $("loginScreen");
+const chatScreen = $("chatScreen");
+const nameInput = $("nameInput");
+const startBtn = $("startBtn");
+const messagesBox = $("messages");
+const messageInput = $("messageInput");
+const sendBtn = $("sendBtn");
+const attachBtn = $("attachBtn");
+const fileInput = $("fileInput");
+const voiceBtn = $("voiceBtn");
+const attachPreview = $("attachPreview");
+const previewName = $("previewName");
+const removeFile = $("removeFile");
+const recordingBar = $("recordingBar");
+const recordTime = $("recordTime");
+const refreshBtn = $("refreshBtn");
+const toast = $("toast");
 
 document.addEventListener("DOMContentLoaded", restoreSession);
-nameInput.addEventListener("keydown", e => { if(e.key==="Enter"){e.preventDefault();startChat();} });
+
+nameInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    startChat();
+  }
+});
+
 startBtn.addEventListener("click", startChat);
 sendBtn.addEventListener("click", sendMessage);
-messageInput.addEventListener("keydown", e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();} });
-messageInput.addEventListener("input", function(){this.style.height="43px";this.style.height=Math.min(this.scrollHeight,120)+"px";});
-attachBtn.addEventListener("click",()=>fileInput.click());
-removeFile.addEventListener("click",clearSelectedFile);
-fileInput.addEventListener("change",()=>{
-  const f=fileInput.files&&fileInput.files[0]; if(!f)return;
-  if(f.size>50*1024*1024){showToast("Please choose a file smaller than 50 MB.");fileInput.value="";return;}
-  if(!f.type.startsWith("image/")&&!f.type.startsWith("video/")){showToast("Choose a picture or video.");fileInput.value="";return;}
-  selectedFile=f;previewName.textContent=f.name;attachPreview.classList.add("active");
+
+messageInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
 });
-refreshBtn.addEventListener("click",()=>{lastRenderedSignature="";loadMessages(true);});
-voiceBtn.addEventListener("click",toggleRecording);
 
-async function restoreSession(){
-  try{
-    const {data:{session},error}=await db.auth.getSession();
-    if(error)throw error;
-    if(session){
-      const {data:profile,error:profileError}=await db.from("chat_users").select("id,display_name,created_at").eq("id",session.user.id).maybeSingle();
-      if(profileError)throw profileError;
-      if(profile){
-        currentUser={userId:profile.id,name:profile.display_name,code:"KULZZY"+profile.id.replace(/-/g,"").slice(0,6).toUpperCase()};
-        localStorage.setItem(USER_STORAGE_KEY,JSON.stringify(currentUser));
-        openChat();return;
+messageInput.addEventListener("input", function() {
+  this.style.height = "43px";
+  this.style.height = Math.min(this.scrollHeight, 110) + "px";
+});
+
+attachBtn.addEventListener("click", () => fileInput.click());
+removeFile.addEventListener("click", clearSelectedFile);
+voiceBtn.addEventListener("click", toggleRecording);
+
+refreshBtn.addEventListener("click", () => {
+  lastRenderedSignature = "";
+  loadMessages(true);
+});
+
+fileInput.addEventListener("change", () => {
+  const f = fileInput.files && fileInput.files[0];
+  if (!f) return;
+
+  if (f.size > 50 * 1024 * 1024) {
+    showToast("Please choose a file smaller than 50 MB.");
+    fileInput.value = "";
+    return;
+  }
+
+  if (!f.type.startsWith("image/") && !f.type.startsWith("video/")) {
+    showToast("Choose a picture or video.");
+    fileInput.value = "";
+    return;
+  }
+
+  selectedFile = f;
+  previewName.textContent = f.name;
+  attachPreview.classList.add("active");
+});
+
+async function restoreSession() {
+  try {
+    const { data: { session }, error } = await db.auth.getSession();
+    if (error) throw error;
+
+    if (session) {
+      const { data: profile, error: profileError } = await db
+        .from("chat_users")
+        .select("id,display_name,created_at")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (profile) {
+        currentUser = {
+          userId: profile.id,
+          name: profile.display_name,
+          code: "KULZZY" + profile.id.replace(/-/g, "").slice(0, 6).toUpperCase()
+        };
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+        openChat();
+        return;
       }
     }
-    const saved=localStorage.getItem(USER_STORAGE_KEY);
-    if(saved){try{nameInput.value=JSON.parse(saved).name||"";}catch(e){}}
-  }catch(error){console.error(error);showToast("Could not reconnect. Please check your internet connection.");}
+
+    const saved = localStorage.getItem(USER_STORAGE_KEY);
+    if (saved) {
+      try {
+        nameInput.value = JSON.parse(saved).name || "";
+      } catch (e) {}
+    }
+  } catch (error) {
+    console.error(error);
+    showToast("Could not reconnect. Please check your internet connection.");
+  }
 }
 
-async function startChat(){
-  const name=nameInput.value.trim();
-  if(!name){showToast("Please enter your name.");nameInput.focus();return;}
-  startBtn.disabled=true;startBtn.textContent="CONNECTING...";
-  try{
-    let {data:{session},error:sessionError}=await db.auth.getSession();
-    if(sessionError)throw sessionError;
-    if(!session){
-      const {data,error}=await db.auth.signInAnonymously();
-      if(error)throw error;
-      session=data.session;
+async function startChat() {
+  const name = nameInput.value.trim();
+
+  if (!name) {
+    showToast("Please enter your name.");
+    nameInput.focus();
+    return;
+  }
+
+  startBtn.disabled = true;
+  startBtn.textContent = "CONNECTING...";
+
+  try {
+    let { data: { session }, error: sessionError } = await db.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    if (!session) {
+      const { data, error } = await db.auth.signInAnonymously();
+      if (error) throw error;
+      session = data.session;
     }
-    if(!session)throw new Error("Could not create a chat session.");
-    const uid=session.user.id;
-    const {data:existing,error:readError}=await db.from("chat_users").select("id,display_name").eq("id",uid).maybeSingle();
-    if(readError)throw readError;
-    let displayName=name;
-    if(existing){
-      displayName=existing.display_name;
-      if(existing.display_name!==name){
-        const {error}=await db.from("chat_users").update({display_name:name}).eq("id",uid);
-        if(error)throw error;
-        displayName=name;
+
+    if (!session) throw new Error("Could not create a chat session.");
+
+    const uid = session.user.id;
+
+    const { data: existing, error: readError } = await db
+      .from("chat_users")
+      .select("id,display_name")
+      .eq("id", uid)
+      .maybeSingle();
+
+    if (readError) throw readError;
+
+    let displayName = name;
+
+    if (existing) {
+      displayName = name;
+
+      if (existing.display_name !== name) {
+        const { error } = await db
+          .from("chat_users")
+          .update({ display_name: name })
+          .eq("id", uid);
+
+        if (error) throw error;
       }
-    }else{
-      const {error}=await db.from("chat_users").insert({id:uid,display_name:name});
-      if(error)throw error;
+    } else {
+      const { error } = await db.from("chat_users").insert({
+        id: uid,
+        display_name: name
+      });
+
+      if (error) throw error;
     }
-    currentUser={userId:uid,name:displayName,code:"KULZZY"+uid.replace(/-/g,"").slice(0,6).toUpperCase()};
-    localStorage.setItem(USER_STORAGE_KEY,JSON.stringify(currentUser));
+
+    currentUser = {
+      userId: uid,
+      name: displayName,
+      code: "KULZZY" + uid.replace(/-/g, "").slice(0, 6).toUpperCase()
+    };
+
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
     openChat();
-  }catch(error){
-    console.error(error);showToast(error.message||"Could not connect to chat server.");
-  }finally{startBtn.disabled=false;startBtn.textContent="START CHAT";}
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Could not connect to chat server.");
+  } finally {
+    startBtn.disabled = false;
+    startBtn.textContent = "START CHAT";
+  }
 }
 
-function openChat(){
-  loginScreen.style.display="none";chatScreen.classList.add("active");lastRenderedSignature="";
-  loadMessages(true);clearInterval(refreshTimer);refreshTimer=setInterval(()=>loadMessages(false),5000);
+function openChat() {
+  loginScreen.style.display = "none";
+  chatScreen.classList.add("active");
+  lastRenderedSignature = "";
+
+  loadMessages(true);
+
+  clearInterval(refreshTimer);
+  refreshTimer = setInterval(() => loadMessages(false), 5000);
 }
 
-async function loadMessages(forceScroll){
-  if(!currentUser)return;
-  try{
-    const {data,error}=await db.from("chat_messages").select("*")
-      .or(`sender_id.eq.${currentUser.userId},recipient_id.eq.${currentUser.userId},and(sender_role.eq.admin,recipient_id.is.null)`)
-      .order("created_at",{ascending:true}).limit(500);
-    if(error)throw error;
-    const list=(data||[]).map(m=>({
-      id:m.id,sender:m.sender_role,text:m.text_content||"",mediaUrl:m.media_url||"",
-      type:m.message_type,timestamp:new Date(m.created_at).getTime()
+async function loadMessages(forceScroll) {
+  if (!currentUser) return;
+
+  try {
+    const { data, error } = await db
+      .from("chat_messages")
+      .select("*")
+      .or(
+        `sender_id.eq.${currentUser.userId},recipient_id.eq.${currentUser.userId},and(sender_role.eq.admin,recipient_id.is.null)`
+      )
+      .order("created_at", { ascending: true })
+      .limit(500);
+
+    if (error) throw error;
+
+    const list = (data || []).map(m => ({
+      id: m.id,
+      sender: m.sender_role,
+      text: m.text_content || "",
+      mediaUrl: m.media_url || "",
+      type: m.message_type,
+      timestamp: new Date(m.created_at).getTime()
     }));
-    renderMessages(list,!!forceScroll);
-  }catch(error){console.error("Chat read error:",error);if(forceScroll)showToast("Could not load messages. Please refresh.");}
+
+    renderMessages(list, !!forceScroll);
+
+  } catch (error) {
+    console.error("Chat read error:", error);
+    if (forceScroll) showToast("Could not load messages. Please refresh.");
+  }
 }
 
-function renderMessages(list,forceScroll){
-  const signature=list.map(m=>`${m.id}|${m.timestamp}|${m.text}|${m.mediaUrl}`).join(",");
-  if(signature===lastRenderedSignature&&!forceScroll)return;
-  const wasNearBottom=messagesBox.scrollHeight-messagesBox.scrollTop-messagesBox.clientHeight<100;
-  lastRenderedSignature=signature;messagesBox.innerHTML="";
-  if(!list.length){messagesBox.appendChild(emptyChat);emptyChat.style.display="flex";return;}
-  list.forEach(message=>{
-    const row=document.createElement("div");row.className="messageRow "+(message.sender==="admin"?"admin":"user");
-    const bubble=document.createElement("div");bubble.className="messageBubble";
-    if(message.sender==="admin"){const sender=document.createElement("div");sender.className="senderName";sender.textContent="KULZZY RADIO";bubble.appendChild(sender);}
-    if(message.text){const t=document.createElement("div");t.className="messageText";t.textContent=message.text;bubble.appendChild(t);}
-    if(message.mediaUrl&&message.type==="image"){const el=document.createElement("img");el.src=message.mediaUrl;el.alt="Image";el.loading="lazy";el.addEventListener("click",()=>window.open(message.mediaUrl,"_blank","noopener"));bubble.appendChild(el);}
-    if(message.mediaUrl&&message.type==="video"){const el=document.createElement("video");el.src=message.mediaUrl;el.controls=true;el.preload="metadata";bubble.appendChild(el);}
-    if(message.mediaUrl&&message.type==="audio"){const el=document.createElement("audio");el.src=message.mediaUrl;el.controls=true;el.preload="metadata";bubble.appendChild(el);}
-    const time=document.createElement("div");time.className="messageTime";time.textContent=formatTime(message.timestamp);bubble.appendChild(time);
-    row.appendChild(bubble);messagesBox.appendChild(row);
+function renderMessages(list, forceScroll) {
+  const signature = list.map(m =>
+    `${m.id}|${m.timestamp}|${m.text}|${m.mediaUrl}`
+  ).join(",");
+
+  if (signature === lastRenderedSignature && !forceScroll) return;
+
+  const wasNearBottom =
+    messagesBox.scrollHeight - messagesBox.scrollTop - messagesBox.clientHeight < 100;
+
+  lastRenderedSignature = signature;
+  messagesBox.innerHTML = "";
+
+  if (!list.length) {
+    const empty = document.createElement("div");
+    empty.className = "emptyChat";
+    empty.innerHTML =
+      '<div class="emptyInner"><div class="emptyIcon">💬</div><div>Your private conversation with Kulzzy Radio will appear here.</div></div>';
+    messagesBox.appendChild(empty);
+    return;
+  }
+
+  list.forEach(message => {
+    const row = document.createElement("div");
+    row.className = "messageRow " +
+      (message.sender === "admin" ? "admin" : "user");
+
+    const bubble = document.createElement("div");
+    bubble.className = "messageBubble";
+
+    if (message.sender === "admin") {
+      const sender = document.createElement("div");
+      sender.className = "senderName";
+      sender.textContent = "KULZZY RADIO";
+      bubble.appendChild(sender);
+    }
+
+    if (message.text) {
+      const t = document.createElement("div");
+      t.className = "messageText";
+      t.textContent = message.text;
+      bubble.appendChild(t);
+    }
+
+    if (message.mediaUrl && message.type === "image") {
+      const el = document.createElement("img");
+      el.src = message.mediaUrl;
+      el.alt = "Image";
+      el.loading = "lazy";
+      el.addEventListener("click", () => {
+        window.open(message.mediaUrl, "_blank", "noopener");
+      });
+      bubble.appendChild(el);
+    }
+
+    if (message.mediaUrl && message.type === "video") {
+      const el = document.createElement("video");
+      el.src = message.mediaUrl;
+      el.controls = true;
+      el.preload = "metadata";
+      bubble.appendChild(el);
+    }
+
+    if (message.mediaUrl && message.type === "audio") {
+      const el = document.createElement("audio");
+      el.src = message.mediaUrl;
+      el.controls = true;
+      el.preload = "metadata";
+      bubble.appendChild(el);
+    }
+
+    const time = document.createElement("div");
+    time.className = "messageTime";
+    time.textContent = formatTime(message.timestamp);
+    bubble.appendChild(time);
+
+    row.appendChild(bubble);
+    messagesBox.appendChild(row);
   });
-  requestAnimationFrame(()=>{if(forceScroll||wasNearBottom)messagesBox.scrollTop=messagesBox.scrollHeight;});
+
+  requestAnimationFrame(() => {
+    if (forceScroll || wasNearBottom) {
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+  });
 }
 
-async function sendMessage(){
-  if(!currentUser)return;
-  if(mediaRecorder){await stopRecording();return;}
-  const text=messageInput.value.trim();
-  if(!text&&!selectedFile)return;
-  sendBtn.disabled=true;
-  try{
-    let mediaUrl=null,type="text";
-    if(selectedFile){type=getMediaType(selectedFile.type);mediaUrl=await uploadMedia(selectedFile);}
-    const {error}=await db.from("chat_messages").insert({
-      sender_id:currentUser.userId,recipient_id:null,sender_role:"customer",
-      message_type:type,text_content:text,media_url:mediaUrl
+async function sendMessage() {
+  if (!currentUser) return;
+
+  if (mediaRecorder) {
+    await stopRecording();
+    return;
+  }
+
+  const text = messageInput.value.trim();
+  if (!text && !selectedFile) return;
+
+  sendBtn.disabled = true;
+
+  try {
+    let mediaUrl = null;
+    let type = "text";
+
+    if (selectedFile) {
+      type = getMediaType(selectedFile.type);
+      mediaUrl = await uploadMedia(selectedFile);
+    }
+
+    const { error } = await db.from("chat_messages").insert({
+      sender_id: currentUser.userId,
+      recipient_id: null,
+      sender_role: "customer",
+      message_type: type,
+      text_content: text,
+      media_url: mediaUrl
     });
-    if(error)throw error;
-    messageInput.value="";messageInput.style.height="43px";clearSelectedFile();lastRenderedSignature="";
+
+    if (error) throw error;
+
+    messageInput.value = "";
+    messageInput.style.height = "43px";
+    clearSelectedFile();
+    lastRenderedSignature = "";
     await loadMessages(true);
-  }catch(error){console.error(error);showToast(error.message||"Message could not be sent.");}
-  finally{sendBtn.disabled=false;}
+
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || "Message could not be sent.");
+  } finally {
+    sendBtn.disabled = false;
+  }
 }
 
-function clearSelectedFile(){selectedFile=null;fileInput.value="";previewName.textContent="";attachPreview.classList.remove("active");}
+function clearSelectedFile() {
+  selectedFile = null;
+  fileInput.value = "";
+  previewName.textContent = "";
+  attachPreview.classList.remove("active");
+}
 
-async function uploadMedia(file){
-  const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_").slice(-100)||"upload";
-  const path=`${currentUser.userId}/${Date.now()}-${Math.random().toString(36).slice(2,8)}-${safeName}`;
-  const {error}=await db.storage.from(MEDIA_BUCKET).upload(path,file,{cacheControl:"3600",upsert:false,contentType:file.type||undefined});
-  if(error)throw error;
-  const {data}=db.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-  if(!data||!data.publicUrl)throw new Error("Could not create media URL.");
+async function uploadMedia(file) {
+  const safeName =
+    file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-100) || "upload";
+
+  const path =
+    `${currentUser.userId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+
+  const { error } = await db.storage
+    .from(MEDIA_BUCKET)
+    .upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: file.type || undefined
+    });
+
+  if (error) throw error;
+
+  const { data } = db.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+
+  if (!data || !data.publicUrl) {
+    throw new Error("Could not create media URL.");
+  }
+
   return data.publicUrl;
 }
-function getMediaType(mime){mime=String(mime||"").toLowerCase();if(mime.startsWith("image/"))return"image";if(mime.startsWith("video/"))return"video";if(mime.startsWith("audio/"))return"audio";return"text";}
 
-async function toggleRecording(){
-  if(mediaRecorder){await stopRecording();return;}
-  if(!navigator.mediaDevices?.getUserMedia||typeof MediaRecorder==="undefined"){showToast("Voice recording is not supported in this browser.");return;}
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});recordedChunks=[];
-    const choices=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"];
-    const mimeType=choices.find(t=>MediaRecorder.isTypeSupported(t))||"";
-    mediaRecorder=mimeType?new MediaRecorder(stream,{mimeType}):new MediaRecorder(stream);
-    mediaRecorder.ondataavailable=e=>{if(e.data&&e.data.size)recordedChunks.push(e.data);};
-    mediaRecorder.onstop=async()=>{
-      stream.getTracks().forEach(t=>t.stop());const blob=new Blob(recordedChunks,{type:mimeType||"audio/webm"});mediaRecorder=null;
-      recordingBar.classList.remove("active");clearInterval(recordingTimer);recordTime.textContent="0:00";
-      if(!blob.size)return;
-      sendBtn.disabled=true;
-      try{
-        const ext=blob.type.includes("mp4")?"mp4":blob.type.includes("ogg")?"ogg":"webm";
-        const file=new File([blob],`voice-note-${Date.now()}.${ext}`,{type:blob.type});
-        const url=await uploadMedia(file);
-        const {error}=await db.from("chat_messages").insert({sender_id:currentUser.userId,recipient_id:null,sender_role:"customer",message_type:"audio",text_content:"",media_url:url});
-        if(error)throw error;lastRenderedSignature="";await loadMessages(true);
-      }catch(error){console.error(error);showToast(error.message||"Voice note could not be sent.");}
-      finally{sendBtn.disabled=false;}
-    };
-    mediaRecorder.start();recordingStartedAt=Date.now();recordingBar.classList.add("active");voiceBtn.textContent="■";
-    recordingTimer=setInterval(updateRecordingTime,500);
-  }catch(error){console.error(error);showToast("Microphone permission was denied or unavailable.");}
+function getMediaType(mime) {
+  mime = String(mime || "").toLowerCase();
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  return "text";
 }
-async function stopRecording(){if(mediaRecorder&&mediaRecorder.state!=="inactive")mediaRecorder.stop();voiceBtn.textContent="🎤";}
-function updateRecordingTime(){const s=Math.floor((Date.now()-recordingStartedAt)/1000);recordTime.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0");}
-function formatTime(timestamp){const d=new Date(Number(timestamp));return isNaN(d.getTime())?"":d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});}
-function showToast(message){toast.textContent=message;toast.style.display="block";clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.style.display="none",3500);}
-</script></body>
+
+async function toggleRecording() {
+  if (mediaRecorder) {
+    await stopRecording();
+    return;
+  }
+
+  if (!navigator.mediaDevices?.getUserMedia ||
+      typeof MediaRecorder === "undefined") {
+    showToast("Voice recording is not supported in this browser.");
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recordedChunks = [];
+
+    const choices = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/ogg;codecs=opus"
+    ];
+
+    const mimeType = choices.find(t => MediaRecorder.isTypeSupported(t)) || "";
+
+    mediaRecorder = mimeType
+      ? new MediaRecorder(stream, { mimeType })
+      : new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = e => {
+      if (e.data && e.data.size) recordedChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+
+      const blob = new Blob(recordedChunks, {
+        type: mimeType || "audio/webm"
+      });
+
+      mediaRecorder = null;
+      recordingBar.classList.remove("active");
+      clearInterval(recordingTimer);
+      recordTime.textContent = "0:00";
+      voiceBtn.textContent = "🎤";
+
+      if (!blob.size) return;
+
+      sendBtn.disabled = true;
+
+      try {
+        const ext = blob.type.includes("mp4")
+          ? "mp4"
+          : blob.type.includes("ogg") ? "ogg" : "webm";
+
+        const file = new File(
+          [blob],
+          `voice-note-${Date.now()}.${ext}`,
+          { type: blob.type }
+        );
+
+        const url = await uploadMedia(file);
+
+        const { error } = await db.from("chat_messages").insert({
+          sender_id: currentUser.userId,
+          recipient_id: null,
+          sender_role: "customer",
+          message_type: "audio",
+          text_content: "",
+          media_url: url
+        });
+
+        if (error) throw error;
+
+        lastRenderedSignature = "";
+        await loadMessages(true);
+
+      } catch (error) {
+        console.error(error);
+        showToast(error.message || "Voice note could not be sent.");
+      } finally {
+        sendBtn.disabled = false;
+      }
+    };
+
+    mediaRecorder.start();
+    recordingStartedAt = Date.now();
+    recordingBar.classList.add("active");
+    voiceBtn.textContent = "■";
+    recordingTimer = setInterval(updateRecordingTime, 500);
+
+  } catch (error) {
+    console.error(error);
+    showToast("Microphone permission was denied or unavailable.");
+  }
+}
+
+async function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+  }
+  voiceBtn.textContent = "🎤";
+}
+
+function updateRecordingTime() {
+  const s = Math.floor((Date.now() - recordingStartedAt) / 1000);
+  recordTime.textContent =
+    Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+}
+
+function formatTime(timestamp) {
+  const d = new Date(Number(timestamp));
+  return isNaN(d.getTime())
+    ? ""
+    : d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function showToast(message) {
+  toast.textContent = message;
+  toast.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.style.display = "none";
+  }, 3500);
+}
+</script>
+
+</body>
 </html>
