@@ -1,18 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="theme-color" content="#020b1b">
-<title>Kulzzy Chat</title>
-
-<style>
+<title>Kulzzy Chat</title><style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
 html,body{
-  margin:0;padding:0;width:100%;height:100%;height:100dvh;
-  overflow:hidden;font-family:Arial,Helvetica,sans-serif;
-  background:#020b1b;color:#fff
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  height:100dvh;
+  overflow:hidden;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#020b1b;
+  color:#fff
 }
 
 button,input,textarea{font:inherit}
@@ -20,15 +23,24 @@ button{cursor:pointer;touch-action:manipulation}
 .hidden{display:none!important}
 
 #loginScreen{
-  position:fixed;inset:0;background:#020b1b;
-  display:flex;align-items:center;justify-content:center;
-  padding:20px;z-index:50
+  position:fixed;
+  inset:0;
+  background:#020b1b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:50
 }
 
 .loginBox{
-  width:100%;max-width:430px;background:#06152d;
-  border:1px solid #c9a227;border-radius:20px;
-  padding:30px 22px;text-align:center;
+  width:100%;
+  max-width:430px;
+  background:#06152d;
+  border:1px solid #c9a227;
+  border-radius:20px;
+  padding:30px 22px;
+  text-align:center;
   box-shadow:0 10px 40px #0007
 }
 
@@ -37,42 +49,75 @@ button{cursor:pointer;touch-action:manipulation}
 .loginSub{color:#b9c4d6;font-size:14px;line-height:1.5;margin-bottom:22px}
 
 #nameInput{
-  width:100%;height:50px;border:1px solid #43516a;
-  background:#020b1b;color:#fff;border-radius:12px;
-  padding:0 15px;outline:none
+  width:100%;
+  height:50px;
+  border:1px solid #43516a;
+  background:#020b1b;
+  color:#fff;
+  border-radius:12px;
+  padding:0 15px;
+  outline:none
 }
 
 #nameInput:focus{border-color:#ffd700}
 
 .startBtn{
-  width:100%;height:50px;margin-top:13px;border:0;
-  border-radius:12px;background:#ffd700;color:#06152d;
-  font-weight:900;font-size:16px
+  width:100%;
+  height:50px;
+  margin-top:13px;
+  border:0;
+  border-radius:12px;
+  background:#ffd700;
+  color:#06152d;
+  font-weight:900;
+  font-size:16px
 }
 
 /* FULL SCREEN CHAT */
 #chatScreen{
-  position:fixed;top:0;right:0;bottom:0;left:0;
-  height:100%;height:100dvh;width:100%;
-  display:none;flex-direction:column;
-  overflow:hidden;background:#020b1b;
-  min-height:0
+  --nav-clearance:90px;
+  --composer-height:88px;
+
+  position:fixed;
+  inset:0;
+  height:100%;
+  height:100dvh;
+  width:100%;
+  display:none;
+  flex-direction:column;
+  overflow:hidden;
+  background:#020b1b;
+  min-height:0;
+  z-index:99999
 }
 
 #chatScreen.active{display:flex}
 
-/* HEADER STAYS AT THE TOP */
+/* HEADER */
 .chatHeader{
-  height:66px;min-height:66px;flex-shrink:0;
-  background:#06152d;border-bottom:1px solid #263653;
-  display:flex;align-items:center;padding:0 14px;gap:12px
+  height:66px;
+  min-height:66px;
+  flex-shrink:0;
+  background:#06152d;
+  border-bottom:1px solid #263653;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  gap:12px
 }
 
 .headerLogo{
-  width:43px;height:43px;min-width:43px;
-  border-radius:50%;background:#ffd700;color:#06152d;
-  display:flex;align-items:center;justify-content:center;
-  font-size:21px;font-weight:900
+  width:43px;
+  height:43px;
+  min-width:43px;
+  border-radius:50%;
+  background:#ffd700;
+  color:#06152d;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:21px;
+  font-weight:900
 }
 
 .headerInfo{flex:1;min-width:0}
@@ -80,18 +125,23 @@ button{cursor:pointer;touch-action:manipulation}
 .headerStatus{color:#7ee787;font-size:12px;margin-top:3px}
 
 .refreshBtn{
-  border:0;background:transparent;color:#ffd700;
-  font-size:23px;padding:8px
+  border:0;
+  background:transparent;
+  color:#ffd700;
+  font-size:23px;
+  padding:8px
 }
 
 /*
-  ONLY THIS AREA SCROLLS.
-  Audio and video players remain inside this area.
+  MESSAGE HISTORY:
+  Only the messages area scrolls.
+  Space is reserved for the floating composer and bottom navigation.
 */
 #messages{
   flex:1 1 0%;
   min-height:0;
   height:0;
+  margin-bottom:calc(var(--nav-clearance) + var(--composer-height));
   overflow-y:auto;
   overflow-x:hidden;
   padding:14px 10px 24px;
@@ -103,16 +153,23 @@ button{cursor:pointer;touch-action:manipulation}
 }
 
 .emptyChat{
-  min-height:200px;height:100%;
-  display:flex;align-items:center;justify-content:center;
-  text-align:center;color:#9da9bc;padding:30px
+  min-height:200px;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  color:#9da9bc;
+  padding:30px
 }
 
 .emptyInner{max-width:320px}
 .emptyIcon{font-size:45px;margin-bottom:10px}
 
 .messageRow{
-  width:100%;display:flex;margin:8px 0;
+  width:100%;
+  display:flex;
+  margin:8px 0;
   flex-shrink:0
 }
 
@@ -120,41 +177,55 @@ button{cursor:pointer;touch-action:manipulation}
 .messageRow.admin{justify-content:flex-start}
 
 .messageBubble{
-  max-width:85%;min-width:70px;
-  padding:9px 11px;border-radius:14px;
-  word-break:break-word;overflow-wrap:anywhere
+  max-width:85%;
+  min-width:70px;
+  padding:9px 11px;
+  border-radius:14px;
+  word-break:break-word;
+  overflow-wrap:anywhere
 }
 
 .messageRow.user .messageBubble{
-  background:#075eaa;border-bottom-right-radius:4px
+  background:#075eaa;
+  border-bottom-right-radius:4px
 }
 
 .messageRow.admin .messageBubble{
-  background:#8b6d00;border-bottom-left-radius:4px
+  background:#8b6d00;
+  border-bottom-left-radius:4px
 }
 
 .senderName{
-  font-size:11px;font-weight:800;
-  margin-bottom:4px;opacity:.8
+  font-size:11px;
+  font-weight:800;
+  margin-bottom:4px;
+  opacity:.8
 }
 
 .messageText{
-  font-size:15px;line-height:1.42;
+  font-size:15px;
+  line-height:1.42;
   white-space:pre-wrap
 }
 
 .messageTime{
-  font-size:10px;opacity:.7;text-align:right;margin-top:5px
+  font-size:10px;
+  opacity:.7;
+  text-align:right;
+  margin-top:5px
 }
 
 .messageBubble img,
 .messageBubble video{
-  display:block;width:100%;max-width:290px;
-  max-height:350px;border-radius:9px;
-  object-fit:contain;background:#000
+  display:block;
+  width:100%;
+  max-width:290px;
+  max-height:350px;
+  border-radius:9px;
+  object-fit:contain;
+  background:#000
 }
 
-/* AUDIO PLAYER STAYS INSIDE THE SCROLLABLE MESSAGE */
 .messageBubble audio{
   display:block;
   width:min(270px,70vw);
@@ -167,100 +238,160 @@ button{cursor:pointer;touch-action:manipulation}
 
 /* VOICE RECORDING INDICATOR */
 .recording{
-  display:none;align-items:center;gap:8px;
-  color:#ff6b6b;font-size:13px;
-  padding:6px 10px;background:#06152d;
+  display:none;
+  align-items:center;
+  gap:8px;
+  color:#ff6b6b;
+  font-size:13px;
+  padding:6px 10px;
+  background:#06152d;
   flex-shrink:0
 }
 
-.recording.active{display:flex}
+.recording.active{
+  display:flex;
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:calc(var(--nav-clearance) + var(--composer-height));
+  z-index:999998
+}
+
 .recordDot{
-  width:9px;height:9px;border-radius:50%;
-  background:#ff3030;animation:pulse 1s infinite
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#ff3030;
+  animation:pulse 1s infinite
 }
 
 @keyframes pulse{50%{opacity:.2}}
 
 /*
-  COMPOSER IS FIXED AT THE BOTTOM.
-  It stays above audio players and the scrolling message history.
+  FLOATING COMPOSER:
+  Fixed above the bottom navigation/audio area.
+  The height is measured automatically by JavaScript.
 */
 .composer{
-  position:sticky;
-  bottom:0;
-  z-index:100;
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:calc(var(--nav-clearance) + env(safe-area-inset-bottom));
+  z-index:999999;
   flex:0 0 auto;
   width:100%;
   background:#06152d;
   border-top:1px solid #263653;
-  padding:20px;
+  padding:12px 10px;
   padding-bottom:max(10px,env(safe-area-inset-bottom));
-  box-shadow:0 -5px 18px #0005;
+  box-shadow:0 -5px 18px #0008
 }
 
 .attachPreview{
-  display:none;padding:7px;margin-bottom:7px;
-  background:#020b1b;border:1px solid #374761;
+  display:none;
+  padding:7px;
+  margin-bottom:7px;
+  background:#020b1b;
+  border:1px solid #374761;
   border-radius:10px
 }
 
-.attachPreview.active{display:flex;align-items:center;gap:8px}
+.attachPreview.active{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
 
 .previewName{
-  flex:1;overflow:hidden;white-space:nowrap;
-  text-overflow:ellipsis;font-size:12px
+  flex:1;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-size:12px
 }
 
 .removeFile{
-  border:0;background:#b00020;color:#fff;
-  width:30px;height:30px;border-radius:50%;flex-shrink:0
+  border:0;
+  background:#b00020;
+  color:#fff;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  flex-shrink:0
 }
 
 .composerRow{
-  display:flex;align-items:flex-end;gap:6px;width:100%
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+  width:100%
 }
 
 .iconBtn{
-  width:43px;height:43px;flex:0 0 43px;
-  border:0;border-radius:50%;background:#102443;
-  color:#ffd700;font-size:20px;
-  display:flex;align-items:center;justify-content:center
+  width:43px;
+  height:43px;
+  flex:0 0 43px;
+  border:0;
+  border-radius:50%;
+  background:#102443;
+  color:#ffd700;
+  font-size:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center
 }
 
 #messageInput{
-  flex:1 1 0%;width:0;min-width:0;
-  max-height:110px;min-height:43px;resize:none;
-  border:1px solid #40516d;border-radius:13px;
-  background:#020b1b;color:#fff;padding:11px 12px;
-  outline:none;line-height:20px;
+  flex:1 1 0%;
+  width:0;
+  min-width:0;
+  max-height:110px;
+  min-height:43px;
+  resize:none;
+  border:1px solid #40516d;
+  border-radius:13px;
+  background:#020b1b;
+  color:#fff;
+  padding:11px 12px;
+  outline:none;
+  line-height:20px;
   overflow-y:auto
 }
 
 #messageInput:focus{border-color:#ffd700}
 
 #sendBtn{
-  width:46px;height:46px;flex:0 0 46px;
-  border:0;border-radius:50%;background:#ffd700;
-  color:#06152d;font-size:19px;font-weight:900
+  width:46px;
+  height:46px;
+  flex:0 0 46px;
+  border:0;
+  border-radius:50%;
+  background:#ffd700;
+  color:#06152d;
+  font-size:19px;
+  font-weight:900
 }
 
 #sendBtn:disabled{opacity:.45}
 .hiddenFile{display:none}
 
 #toast{
-  position:fixed;left:50%;bottom:100px;
+  position:fixed;
+  left:50%;
+  bottom:calc(110px + var(--toast-nav-clearance, 90px));
   transform:translateX(-50%);
-  background:#111d31;border:1px solid #ffd700;
-  color:#fff;padding:10px 16px;border-radius:10px;
-  font-size:13px;z-index:100;display:none;
-  max-width:90%;text-align:center
+  background:#111d31;
+  border:1px solid #ffd700;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:10px;
+  font-size:13px;
+  z-index:1000000;
+  display:none;
+  max-width:90%;
+  text-align:center
 }
-</style>
-</head>
-
-<body>
-
-<section id="loginScreen">
+</style></head><body><section id="loginScreen">
   <div class="loginBox">
     <div class="logoText">KULZZY</div>
     <div class="loginTitle">KULZZY CHAT</div>
@@ -268,56 +399,37 @@ button{cursor:pointer;touch-action:manipulation}
     <input id="nameInput" type="text" maxlength="60" placeholder="Enter your name" autocomplete="name">
     <button class="startBtn" id="startBtn" type="button">START CHAT</button>
   </div>
-</section>
-
-<section id="chatScreen">
-
-  <header class="chatHeader">
+</section><section id="chatScreen">  <header class="chatHeader">
     <div class="headerLogo">K</div>
     <div class="headerInfo">
       <div class="headerTitle">KULZZY RADIO</div>
       <div class="headerStatus">● Online</div>
     </div>
     <button class="refreshBtn" id="refreshBtn" type="button" title="Refresh">↻</button>
-  </header>
-
-  <main id="messages">
+  </header>  <main id="messages">
     <div class="emptyChat" id="emptyChat">
       <div class="emptyInner">
         <div class="emptyIcon">💬</div>
         <div>Your private conversation with Kulzzy Radio will appear here.</div>
       </div>
     </div>
-  </main>
-
-  <div class="recording" id="recordingBar">
+  </main>  <div class="recording" id="recordingBar">
     <span class="recordDot"></span>
     Recording voice note...
     <span id="recordTime">0:00</span>
-  </div>
-
-  <div class="composer">
+  </div>  <div class="composer" id="composer">
     <div class="attachPreview" id="attachPreview">
       <div class="previewName" id="previewName"></div>
       <button class="removeFile" id="removeFile" type="button">×</button>
-    </div>
+    </div><div class="composerRow">
+  <button class="iconBtn" id="attachBtn" type="button" title="Attach picture or video">+</button>
+  <input id="fileInput" class="hiddenFile" type="file" accept="image/*,video/*">
+  <textarea id="messageInput" rows="1" maxlength="5000" placeholder="Type a message..."></textarea>
+  <button class="iconBtn" id="voiceBtn" type="button" title="Voice note">🎤</button>
+  <button id="sendBtn" type="button" title="Send">➤</button>
+</div>
 
-    <div class="composerRow">
-      <button class="iconBtn" id="attachBtn" type="button" title="Attach picture or video">+</button>
-      <input id="fileInput" class="hiddenFile" type="file" accept="image/*,video/*">
-      <textarea id="messageInput" rows="1" maxlength="5000" placeholder="Type a message..."></textarea>
-      <button class="iconBtn" id="voiceBtn" type="button" title="Voice note">🎤</button>
-      <button id="sendBtn" type="button" title="Send">➤</button>
-    </div>
-  </div>
-
-</section>
-
-<div id="toast"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
+  </div></section><div id="toast"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 "use strict";
 
 const SUPABASE_URL = "https://dzbceefbfousvcejoqog.supabase.co";
@@ -359,6 +471,28 @@ const recordingBar = $("recordingBar");
 const recordTime = $("recordTime");
 const refreshBtn = $("refreshBtn");
 const toast = $("toast");
+const composer = $("composer");
+
+/*
+  Automatically measure the floating composer.
+  This reserves the correct space above the bottom navigation,
+  even when the attachment preview makes the composer taller.
+*/
+function updateComposerHeight(){
+  if (!composer || !chatScreen) return;
+
+  const height = Math.ceil(composer.getBoundingClientRect().height);
+  chatScreen.style.setProperty("--composer-height", height + "px");
+}
+
+if ("ResizeObserver" in window) {
+  const composerObserver = new ResizeObserver(updateComposerHeight);
+  composerObserver.observe(composer);
+} else {
+  window.addEventListener("resize", updateComposerHeight);
+}
+
+window.addEventListener("resize", updateComposerHeight);
 
 document.addEventListener("DOMContentLoaded", restoreSession);
 
@@ -382,6 +516,7 @@ messageInput.addEventListener("keydown", e => {
 messageInput.addEventListener("input", function() {
   this.style.height = "43px";
   this.style.height = Math.min(this.scrollHeight, 110) + "px";
+  updateComposerHeight();
 });
 
 attachBtn.addEventListener("click", () => fileInput.click());
@@ -412,11 +547,36 @@ fileInput.addEventListener("change", () => {
   selectedFile = f;
   previewName.textContent = f.name;
   attachPreview.classList.add("active");
+  updateComposerHeight();
 });
 
+/*
+  Restore the user's existing session.
+  If a saved name exists but the session is unavailable,
+  automatically start the chat using that saved name.
+*/
 async function restoreSession() {
+  let savedUser = null;
+
   try {
-    const { data: { session }, error } = await db.auth.getSession();
+    const saved = localStorage.getItem(USER_STORAGE_KEY);
+
+    if (saved) {
+      try {
+        savedUser = JSON.parse(saved);
+        if (savedUser && savedUser.name) {
+          nameInput.value = savedUser.name;
+        }
+      } catch (e) {
+        savedUser = null;
+      }
+    }
+
+    const {
+      data: { session },
+      error
+    } = await db.auth.getSession();
+
     if (error) throw error;
 
     if (session) {
@@ -434,22 +594,30 @@ async function restoreSession() {
           name: profile.display_name,
           code: "KULZZY" + profile.id.replace(/-/g, "").slice(0, 6).toUpperCase()
         };
+
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
         openChat();
         return;
       }
     }
 
-    const saved = localStorage.getItem(USER_STORAGE_KEY);
-    if (saved) {
-      try {
-        nameInput.value = JSON.parse(saved).name || "";
-      } catch (e) {}
+    /*
+      No usable profile was found.
+      A previously saved name lets the user continue without
+      seeing the name-entry screen again.
+    */
+    if (savedUser && savedUser.name) {
+      nameInput.value = savedUser.name;
+      await startChat();
+      return;
     }
+
   } catch (error) {
     console.error(error);
     showToast("Could not reconnect. Please check your internet connection.");
   }
+
+  updateComposerHeight();
 }
 
 async function startChat() {
@@ -465,7 +633,11 @@ async function startChat() {
   startBtn.textContent = "CONNECTING...";
 
   try {
-    let { data: { session }, error: sessionError } = await db.auth.getSession();
+    let {
+      data: { session },
+      error: sessionError
+    } = await db.auth.getSession();
+
     if (sessionError) throw sessionError;
 
     if (!session) {
@@ -529,6 +701,9 @@ async function startChat() {
 function openChat() {
   loginScreen.style.display = "none";
   chatScreen.classList.add("active");
+
+  updateComposerHeight();
+
   lastRenderedSignature = "";
 
   loadMessages(true);
@@ -587,6 +762,7 @@ function renderMessages(list, forceScroll) {
     empty.className = "emptyChat";
     empty.innerHTML =
       '<div class="emptyInner"><div class="emptyIcon">💬</div><div>Your private conversation with Kulzzy Radio will appear here.</div></div>';
+
     messagesBox.appendChild(empty);
     return;
   }
@@ -618,9 +794,11 @@ function renderMessages(list, forceScroll) {
       el.src = message.mediaUrl;
       el.alt = "Image";
       el.loading = "lazy";
+
       el.addEventListener("click", () => {
         window.open(message.mediaUrl, "_blank", "noopener");
       });
+
       bubble.appendChild(el);
     }
 
@@ -691,7 +869,10 @@ async function sendMessage() {
 
     messageInput.value = "";
     messageInput.style.height = "43px";
+
     clearSelectedFile();
+    updateComposerHeight();
+
     lastRenderedSignature = "";
     await loadMessages(true);
 
@@ -708,6 +889,7 @@ function clearSelectedFile() {
   fileInput.value = "";
   previewName.textContent = "";
   attachPreview.classList.remove("active");
+  updateComposerHeight();
 }
 
 async function uploadMedia(file) {
@@ -738,9 +920,11 @@ async function uploadMedia(file) {
 
 function getMediaType(mime) {
   mime = String(mime || "").toLowerCase();
+
   if (mime.startsWith("image/")) return "image";
   if (mime.startsWith("video/")) return "video";
   if (mime.startsWith("audio/")) return "audio";
+
   return "text";
 }
 
@@ -786,6 +970,7 @@ async function toggleRecording() {
 
       mediaRecorder = null;
       recordingBar.classList.remove("active");
+
       clearInterval(recordingTimer);
       recordTime.textContent = "0:00";
       voiceBtn.textContent = "🎤";
@@ -833,6 +1018,7 @@ async function toggleRecording() {
     recordingStartedAt = Date.now();
     recordingBar.classList.add("active");
     voiceBtn.textContent = "■";
+
     recordingTimer = setInterval(updateRecordingTime, 500);
 
   } catch (error) {
@@ -845,31 +1031,37 @@ async function stopRecording() {
   if (mediaRecorder && mediaRecorder.state !== "inactive") {
     mediaRecorder.stop();
   }
+
   voiceBtn.textContent = "🎤";
 }
 
 function updateRecordingTime() {
   const s = Math.floor((Date.now() - recordingStartedAt) / 1000);
+
   recordTime.textContent =
     Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
 }
 
 function formatTime(timestamp) {
   const d = new Date(Number(timestamp));
+
   return isNaN(d.getTime())
     ? ""
-    : d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    : d.toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
+      });
 }
 
 function showToast(message) {
   toast.textContent = message;
   toast.style.display = "block";
+
   clearTimeout(toastTimer);
+
   toastTimer = setTimeout(() => {
     toast.style.display = "none";
   }, 3500);
 }
-</script>
-
-</body>
+</script></body>
 </html>
